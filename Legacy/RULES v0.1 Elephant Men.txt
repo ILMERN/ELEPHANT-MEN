@@ -1,0 +1,67 @@
+______ELEPHANT MEN______
+
+	~~SETUP~~
+White pawns (soldiers) on c3, d3, and f3
+White bishop (monk) on e3
+Black pawns (soldiers) on c6, e6, and f6
+Black bishop (monk) on d6
+
+Favour counter set to 0
+
+	~~PLAY~~
+Each turn, both players choose 3 actions for their units to perform. These actions are revealed simultaneously and in sequence.
+
+Phase 1: Player 1 and Player 2's 1st action are performed simultaneously
+Phase 2: Player 1 and Player 2's 2nd action are performed simultaneously
+Phase 3: Player 1 and Player 2's 3rd action are performed simultaneously
+
+	~~FAVOUR~~
+Favour is a resource balanced between the two players (tug of war), tracked by a single number. If white gains Favour, the counter increases by 1. If black gains favour, the counter decreases by 1. Favour can be gained in two ways: eliminating/converting enemy units (gains 3 favour) or [Pray]ing with a monk (gains 1 favour). Eliminating an allied unit will grant the opponent 3 Favour. If Favour is at least +7 or -7 at the end of a phase, the player who gained that favour wins. A player can also win by eliminating/converting all enemy units.
+
+	~~AVAILABLE ACTIONS~~
+
+SOLDIER (3HP)
+[Move]
+[Poke]
+[Cleave]
+
+MONK (2HP)
+[Move]
+[Pray]
+[Convert]
+
+Note: if a unit's health reaches 0, that unit is immediately removed from play.
+
+	~~ACTION NOTATION~~
+(examples in brackets)
+[Move]:			[unit]>[target]		(c3>c4)
+[Poke]/[Convert]:	[unit].[target]		(c4.d5)
+[Cleave]:		[unit]x[target]		(c4xd4)
+[Pray]:			[unit] p		(e3 p)
+
+	~~ACTION DETAILS~~
+[Move]
+ -Unit targets and moves one space in one of the 4 cardinal directions. [Move] fails if target space is either the target of another unit's [Move] command or is occupied this phase (unless that unit is [Move]ing to another space).
+
+[Poke]
+ -Unit targets a space either 2 spaces away in one of the 4 cardinal directions or 1 space away diagonally. If a unit is in the targeted space, that unit takes 1 damage. Otherwise, this unit cannot act next phase (it is resting). [Poke] misses if the unit in the targeted space [Move]s this phase. [Poke] hits if a unit [Move]s into the targeted space this phase.
+
+[Cleave]
+ -Unit targets a space 1 space away in one of the 4 cardinal directions. On the next phase, any unit in the targeted space takes 2 damage. Unlike [Poke], [Cleave] will cause this unit to rest whether it hits or misses.
+
+[Pray]
+ -Player controlling this unit gains 1 favour. This unit must rest and is unable to act next phase.
+
+[Convert]
+ -Unit targets a space either 2 spaces away in one of the 4 cardinal directions or 1 space away diagonally. If an enemy unit is in the targeted space, that unit becomes an allied unit. Whether [Convert] hits or misses, this unit does not have to rest and can act next phase.
+
+	~~INTERRUPTING ACTIONS~~
+All actions can be interrupted if the acting unit is targeted by another action with a higher priority (listed below). Actions will not be interrupted by an equal action (e.g. if two soldiers [Poke] each other, they will both take 1 damage). If an action would cause a unit to rest but is interrupted before it can do so, it will not have to rest (e.g. if a soldier [Poke]s a [Pray]ing monk, that monk will gain no favour but may move next phase).
+
+	~~ACTION RESOLUTION ORDER~~
+
+1. Move
+2. Poke
+3. Convert
+4. Cleave
+5. Pray
