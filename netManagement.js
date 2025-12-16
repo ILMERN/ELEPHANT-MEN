@@ -3,8 +3,6 @@ const hostButton = document.querySelector('.host-button');
 const joinButton = document.querySelector('.join-button');
 const hostCode = document.querySelector('.host-code');
 const joinCode = document.querySelector('.join-code');
-const sendButton = document.querySelector('.send');
-const actionFields = document.querySelectorAll('.action-field');
 
 // Create connection handling variables
 let connectMode = 'none';
@@ -12,7 +10,9 @@ let peer = null;
 let otherPeer = null;
 let peerID = null;
 let myActions = [];
+let iSent = false;
 let theirActions = [];
+let theySent = false;
 
 // Create systems for generating peer IDs
 const gameCode = 'ELMEN_';
@@ -71,12 +71,14 @@ joinButton.addEventListener('click', function () {
     }
 });
 
-//TODO
+
 function handleData(data) {
-    if (theirActions.length === 0) {
+    if (!theySent) {
         theirActions = data;
-        if (myActions.length !== 0) {
+        theySent = true;
+        if (iSent) {
             executeActions([...myActions, ...theirActions], baseBoard);
+            resetInputActions();
         }
     }
 }
@@ -98,14 +100,25 @@ sendButton.addEventListener('click', function () {
         console.log('no connection!');
         return;
     }
-    if (myActions.length === 0) {
-        actionFields.forEach((field, i) => {
-            myActions.push(...parseActions(field.value, i + 1));
-            field.value = "";
-        })
+    if (!iSent) {
+        currentActions.forEach((set, i) => {
+            myActions.push(...set);
+        });
         otherPeer.send(myActions);
-        if (theirActions.length !== 0) {
+        iSent = true;
+
+        if (theySent) {
             executeActions([...myActions, ...theirActions], baseBoard);
+            resetInputActions();
         }
     }
 });
+
+function resetInputActions() {
+    myActions = [];
+    iSent = false;
+    theirActions = [];
+    theySent = false;
+    deleteAllInputActions();
+    currentPhase = 0;
+};

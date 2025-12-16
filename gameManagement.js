@@ -1,10 +1,28 @@
+// TODO: add victory screen and new game
+
 // Assign the player's team, green by default (as opposed to purple)
 let playerTeam = "g";
 
 // initialize board buttons
 const boardButtons = document.querySelectorAll('.board-button');
 
-//
+// Initialize canvas
+const arrowCanvas = document.querySelector('[id="arrows"]');
+const arrowCanvasContext = arrowCanvas.getContext('2d');
+
+// Initialize action menu
+const actionMenu = document.querySelector('.action-menu');
+const actionSelectors = document.querySelectorAll('.action-selector');
+
+// Initialize midscreen
+const phaseSelectors = document.querySelectorAll('.phase-selector');
+const sendButton = document.querySelector('.send');
+const actionFields = document.querySelectorAll('.action-field');
+
+// Time in ms between actions (hehe ebil number)
+let animDelay = 666;
+
+// Take in a position and give the opposite square (e.g. "f3" -> "c6")
 function invertPosition(position) {
     if (position.length != 2) {
         return null;
@@ -16,7 +34,7 @@ function invertPosition(position) {
     return String.fromCharCode('h'.charCodeAt(0) - colIndex) + (rowIndex + 1);
 }
 
-//
+// Go from being player 1 to player 2
 function flipBoard() {
     boardButtons.forEach(button => {
         button.name = invertPosition(button.name);
@@ -29,15 +47,7 @@ function flipBoard() {
     renderBoard(baseBoard);
 }
 
-// create listener for each board button
-boardButtons.forEach(button => {
-    button.addEventListener('click', function () {
-        // TMP - log button pressed
-        const square = this.name;
-        console.log('Clicked square:', square);
-    });
-});
-
+// Parse a text string into an array of valid action objects
 function parseActions(field, phase) {
     if (field.length % 5 !== 0) {
         return [];
@@ -71,8 +81,8 @@ class BoardState {
                     if (piece) {
                         this.board[x][y] = piece.clone();
                     }
-                })
-            })
+                });
+            });
             this.favour = baseToCopy.favour;
         } else {
             this.favour = 0;
@@ -91,10 +101,10 @@ class BoardState {
             return null;
         }
 
-//        if (playerTeam === "p") {
-//            colIndex = 7 - colIndex;
-//            rowIndex = 7 - rowIndex;
-//        }
+        //        if (playerTeam === "p") {
+        //            colIndex = 7 - colIndex;
+        //            rowIndex = 7 - rowIndex;
+        //        }
 
         return [this.board[rowIndex][colIndex], rowIndex, colIndex];
     }
@@ -110,10 +120,10 @@ class BoardState {
             return null;
         }
 
-//        if (playerTeam === "p") {
-//            colIndex = 7 - colIndex;
-//            rowIndex = 7 - rowIndex;
-//        }
+        //        if (playerTeam === "p") {
+        //            colIndex = 7 - colIndex;
+        //            rowIndex = 7 - rowIndex;
+        //        }
 
         return this.board[rowIndex][colIndex];
     }
@@ -124,8 +134,16 @@ const baseBoard = new BoardState();
 
 
 // create function to visually update all pieces
-function renderBoard(boardToRender) {
-    favourCounter.innerHTML = `Favour: ${boardToRender.favour}`;
+function renderBoard(boardToRender = baseBoard) {
+    const favourAdvantage = (() => {
+        switch (Math.sign(boardToRender.favour)) {
+            case 1: return "Green";
+            case -1: return "Purple"
+            default: return "Neutral";
+        }
+    })();
+    favourCounter.innerHTML = `Favour: ${boardToRender.favour} (${favourAdvantage})`;
+
 
     boardButtons.forEach(button => {
         const piece = boardToRender.getPiece(button.name);
@@ -134,7 +152,11 @@ function renderBoard(boardToRender) {
 
         let spriteName = "";
         if (piece) {
-            spriteName = `Sprites/${piece.type}_${piece.team}.png`;
+            let resting = "";
+            if (piece.isResting) {
+                resting = "_resting";
+            }
+            spriteName = `Sprites/${piece.type}_${piece.team}${resting}.png`;
 
             const currentHealth = piece.currentHealth;
             const missingHealth = piece.maxHealth - currentHealth;
@@ -153,7 +175,7 @@ function renderBoard(boardToRender) {
         }
         button.querySelector(".piece").src = spriteName;
 
-    })
+    });
 }
 
 // Create action objects. The order they appear is the order they are executed.
@@ -178,8 +200,8 @@ const actionObjects = [
                         fail.add(otherAction);
                         return;
                     }
-                })
-            })
+                });
+            });
 
             // Recursive function performed by each move to check its target and add itself to pass/fail set
             function passFail(action, root) {
@@ -200,7 +222,7 @@ const actionObjects = [
                     return true;
                 }
 
-                if (targetPiece.currentAction !== "move" || targetPiece.isResting) {
+                if (targetPiece.currentAction !== "move") {
                     fail.add(action);
                     return false;
                 }
@@ -253,7 +275,7 @@ const actionObjects = [
                 if (passFail(action)) {
                     executeMove(action, null);
                 }
-            })
+            });
         }
     },
     {
@@ -263,7 +285,7 @@ const actionObjects = [
             actionList.forEach(action => {
                 const [lRow, lCol] = positionFromString(action.location);
                 targetBoard.board[lRow][lCol].isBlocking = true;
-            })
+            });
         }
     },
     {
@@ -279,7 +301,7 @@ const actionObjects = [
                     actingPiece.isResting = true;
                 }
                 targetedSpaces[tRow][tCol] = true;
-            })
+            });
         }
     },
     {
@@ -333,7 +355,7 @@ const actionObjects = [
             }
             actionList.forEach(action => {
                 checkAction(action);
-            })
+            });
 
             // Add all fake actions to action list
             let allShoves = [...actionList, ...fakeShoves];
@@ -350,8 +372,8 @@ const actionObjects = [
                         fail.add(otherAction);
                         return;
                     }
-                })
-            })
+                });
+            });
 
             // Recursive function performed by each shove to check its target and add itself to pass/fail set
             function passFail(action, root) {
@@ -371,11 +393,6 @@ const actionObjects = [
                 if (targetPiece === null) {
                     pass.add(action);
                     return true;
-                }
-
-                if (targetPiece.isResting) {
-                    fail.add(action);
-                    return false;
                 }
 
                 const otherAction = allShoves.find(act => act.location === action.target);
@@ -426,7 +443,7 @@ const actionObjects = [
                 if (passFail(action)) {
                     executeMove(action, null);
                 }
-            })
+            });
         }
     },
     {
@@ -441,7 +458,7 @@ const actionObjects = [
                     targetPiece.team = actingPiece.team;
                 }
                 targetedSpaces[tRow][tCol] = true;
-            })
+            });
         }
     },
     {
@@ -456,7 +473,7 @@ const actionObjects = [
                 }
                 actingPiece.isResting = true;
                 targetedSpaces[tRow][tCol] = true;
-            })
+            });
 
         }
     },
@@ -465,15 +482,9 @@ const actionObjects = [
         range: 0,
         exe(actionList, targetBoard, targetedSpaces) {
             actionList.forEach(action => {
-                const actingPiece = targetBoard.getPiece(action.location);
-                if (action.team === "g") {
-                    targetBoard.favour += 1;
-                }
-                else {
-                    targetBoard.favour -= 1;
-                }
+                addFavour(targetBoard.getPiece(action.location).team, 1, targetBoard);
                 actingPiece.isResting = true;
-            })
+            });
         }
     }
 ]
@@ -574,10 +585,10 @@ function positionFromString(position) {
         return null;
     }
 
-//    if (playerTeam === "p") {
-//        colIndex = 7 - colIndex;
-//        rowIndex = 7 - rowIndex;
-//    }
+    //    if (playerTeam === "p") {
+    //        colIndex = 7 - colIndex;
+    //        rowIndex = 7 - rowIndex;
+    //    }
 
     return [rowIndex, colIndex];
 }
@@ -591,9 +602,9 @@ function positionFromID(rowID, colID) {
     let position = String.fromCharCode('a'.charCodeAt(0) + colID);
     position += 8 - rowID;
 
-//    if (playerTeam === "p") {
-//        position = invertPosition(position);
-//    }
+    //    if (playerTeam === "p") {
+    //        position = invertPosition(position);
+    //    }
 
     return position;
 }
@@ -606,127 +617,386 @@ function sortActionsByPhase(actions) {
 
     actions.forEach(action => {
         switch (action.phase) {
-            case 1:
+            case 0:
                 phase1.push(action);
                 break;
-            case 2:
+            case 1:
                 phase2.push(action);
                 break;
-            case 3:
+            case 2:
                 phase3.push(action);
                 break;
         }
-    })
+    });
 
     return [phase1, phase2, phase3];
 }
 
 // Execute a set of actions in a single phase
-function executePhase(actions, targetBoard) {
+function executePhase(actions, targetBoard, rapid = false) {
+    return new Promise((resolve) => {
 
-    // Culls moves performed by invalid pieces and invalid targets
-    const exhaustedPieces = new Set();
+        // Culls moves performed by invalid pieces and invalid targets
+        const exhaustedPieces = new Set();
 
-    const validActions = Array(actionObjects.length).fill(null).map(() => []);
-    actions.forEach(action => {
-        try {
-            const [actingPiece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
-            const [tRow, tCol] = positionFromString(action.target);
+        const validActions = Array(actionObjects.length).fill(null).map(() => []);
+        actions.forEach(action => {
+            try {
+                const [actingPiece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
+                const [tRow, tCol] = positionFromString(action.target);
 
-            // Check if there is a piece of the right team on the action location
-            if (!actingPiece || actingPiece.team != action.team) {
-                // TODO - write error message
-                throw new Error(`${action.location}${action.notation}${action.target} failed: invalid piece`);
+                // Check if there is a piece of the right team on the action location
+                if (!actingPiece || actingPiece.team != action.team) {
+                    // TODO - write error message
+                    throw new Error(`${action.location}${action.notation}${action.target} failed: invalid piece`);
+                }
+
+                // Check to ensure acting piece can use specified move
+                const usableAction = actingPiece.availableActions.find(at => at.notation === action.notation);
+
+                if (!usableAction) {
+                    // TODO - write error message
+                    throw new Error(`Action ${action.location}${action.notation}${action.target} failed: invalid notation`);
+                }
+                if (actingPiece.isResting) {
+                    // TODO - write error message
+                    throw new Error(`Action ${action.location}${action.notation}${action.target} failed: piece is resting`);
+                }
+
+                // Check if piece has taken an action this turn already
+                if (exhaustedPieces.has(actingPiece)) {
+                    // TODO - write error message
+                    throw new Error(`Action ${action.location}${action.notation}${action.target} failed: piece has too many actions.`);
+                }
+
+                // Check to ensure target is exactly within range
+                const actionOrder = actionObjects.findIndex(ob => ob.type === usableAction.type);
+                const actionObject = actionObjects[actionOrder];
+                const targetDistance = Math.abs(lRow - tRow) + Math.abs(lCol - tCol);
+
+                if (targetDistance != actionObject.range) {
+                    // TODO - write error message
+                    throw new Error(`Action ${action.location}${action.notation}${action.target} failed: target out of range`);
+                }
+
+                // Action is successful
+                validActions[actionOrder].push(action);
+                exhaustedPieces.add(actingPiece);
+                actingPiece.currentAction = actionObjects[actionOrder].type;
+
+            } catch (e) {
+                console.log(e);
             }
 
-            // Check to ensure acting piece can use specified move
-            const usableAction = actingPiece.availableActions.find(at => at.notation === action.notation);
+        });
 
-            if (!usableAction) {
-                // TODO - write error message
-                throw new Error(`Action ${action.location}${action.notation}${action.target} failed: invalid notation`);
-            }
-            if (actingPiece.isResting) {
-                // TODO - write error message
-                throw new Error(`Action ${action.location}${action.notation}${action.target} failed: piece is resting`);
-            }
+        // De-rests all pieces
+        targetBoard.board.forEach(row => {
+            row.forEach(piece => {
+                if (piece !== null) {
+                    piece.isResting = false;
+                }
+            });
+        });
 
-            // Check if piece has taken an action this turn already
-            if (exhaustedPieces.has(actingPiece)) {
-                // TODO - write error message
-                throw new Error(`Action ${action.location}${action.notation}${action.target} failed: piece has too many actions.`);
-            }
+        renderBoard(targetBoard);
 
-            // Check to ensure target is exactly within range
-            const actionOrder = actionObjects.findIndex(ob => ob.type === usableAction.type);
-            const actionObject = actionObjects[actionOrder];
-            const targetDistance = Math.abs(lRow - tRow) + Math.abs(lCol - tCol);
-
-            if (targetDistance != actionObject.range) {
-                // TODO - write error message
-                throw new Error(`Action ${action.location}${action.notation}${action.target} failed: target out of range`);
-            }
-
-            // Action is successful
-            validActions[actionOrder].push(action);
-            exhaustedPieces.add(actingPiece);
-            actingPiece.currentAction = actionObjects[actionOrder].type;
-
-        } catch (e) {
-            console.log(e);
+        let targetedSpaces = Array(8).fill(null).map(() => Array(8).fill(null));
+        let currentDelay = 0;
+        if (!rapid) {
+            currentDelay += animDelay;
         }
 
-    })
+        // Executes all remaining actions in order, culling for interruptions and dead pieces along the way
+        actionObjects.forEach((obj, i) => {
+            // Check for interruptions
+            const successfulActions = [];
+            validActions[i].forEach(action => {
+                const [piece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
 
-    // De-rests all pieces
-    targetBoard.board.forEach(row => {
-        row.forEach(piece => {
-            if (piece !== null) {
-                piece.isResting = false;
-            }
-        })
-    })
 
-    let targetedSpaces = Array(8).fill(null).map(() => Array(8).fill(null));
 
-    // Executes all remaining actions in order, culling for interruptions and dead pieces along the way
-    actionObjects.forEach((obj, i) => {
-        // Check for interruptions
-        const successfulActions = [];
-        validActions[i].forEach(action => {
-            const [piece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
-
-            if (!piece || piece.isDead) {
-                targetBoard.board[lRow][lCol] = null;
-            } else if (!targetedSpaces[lRow][lCol]) {
-                successfulActions.push(action);
-            }
-        })
-        obj.exe?.(successfulActions, targetBoard, targetedSpaces);
-    })
-
-    // Resets all pieces
-    targetBoard.board.forEach((row, x) => {
-        row.forEach((piece, y) => {
-            if (piece !== null) {
-                piece.resetAction();
-                if (piece.isDead) {
-                    targetBoard.board[x][y] = null;
+                if (piece?.isDead) {
+                    addFavour(oppositeTeam(piece.team), 3, targetBoard);
+                    targetBoard.board[lRow][lCol] = null;
+                } else if (!targetedSpaces[lRow][lCol]) {
+                    successfulActions.push(action);
+                    if (!rapid) {
+                        drawAction(action.location, action.notation, action.target);
+                    }
+                }
+            });
+            if (successfulActions.length !== 0) {
+                const actionList = [...successfulActions];
+                if (!rapid) {
+                    setTimeout(() => {
+                        obj.exe?.(actionList, targetBoard, targetedSpaces);
+                        renderBoard(targetBoard);
+                    }, currentDelay);
+                    currentDelay += animDelay;
+                } else {
+                    obj.exe?.(actionList, targetBoard, targetedSpaces);
                 }
             }
-        })
-    })
+        });
 
-    // Renders the board
-    renderBoard(targetBoard);
+        // And after everything is done
+        setTimeout(() => {
+            // Resets all pieces
+            targetBoard.board.forEach((row, x) => {
+                row.forEach((piece, y) => {
+                    if (piece !== null) {
+                        piece.resetAction();
+                        if (piece.isDead) {
+                            addFavour(oppositeTeam(piece.team), 3, targetBoard);
+                            targetBoard.board[x][y] = null;
+                        }
+                    }
+                });
+            });
+            arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
+            if (!rapid) {
+                renderBoard(targetBoard);
+            }
+            resolve();
+        }, currentDelay);
+    });
+}
+
+
+// TODO
+function disableBoard() {
+
+}
+
+function enableBoard() {
+
 }
 
 // Execute a series of actions
-function executeActions(actions, targetBoard) {
+async function executeActions(actions, targetBoard) {
+    arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
     const phases = sortActionsByPhase(actions);
-    phases.forEach(phase => {
-        executePhase(phase, targetBoard);
+
+    for (const phase of phases) {
+        await executePhase(phase, targetBoard);
+    }
+    enableBoard();
+}
+
+function addFavour(team, amount, board) {
+    console.log(`${team}, ${amount}, ${board}`);
+    if (team === "g") {
+        board.favour += amount;
+    } else {
+        board.favour -= amount;
+    }
+}
+
+function oppositeTeam(team) {
+    switch (team) {
+        case "g": return "p";
+        case "p": return "g";
+        default: return null;
+    }
+}
+
+// Function to draw images onto the arrow canvas
+function drawAction(location, notation = "none", target = location) {
+    let vLocation = "";
+    let vTarget = "";
+    if (playerTeam === "g") {
+        vLocation = location;
+        vTarget = target;
+    } else {
+        vLocation = invertPosition(location);
+        vTarget = invertPosition(target);
+    }
+
+    const [lRow, lCol] = positionFromString(vLocation);
+    const [tRow, tCol] = positionFromString(vTarget);
+
+    const angleDEG = (Math.atan2(tRow - lRow, tCol - lCol) * 180) / Math.PI;
+    const angleRAD = (Math.floor(angleDEG / 90) * Math.PI) / 2;
+
+    const spriteImage = new Image();
+    let spriteName = "sprites/action";
+    switch (notation) {
+        case ";":
+            spriteName += "_self.png";
+            break;
+        case "x":
+            spriteName += "_close.png";
+            break;
+        case ".":
+            if (lRow === tRow || lCol === tCol) {
+                spriteName += "_far.png";
+            } else {
+                spriteName += "_far_d.png";
+            }
+            break;
+        case ">":
+            spriteName += "_move.png";
+            break;
+        default:
+            spriteName += "_none.png";
+            break;
+    }
+    spriteImage.src = spriteName;
+
+    spriteImage.onload = function () {
+        arrowCanvasContext.save()
+        arrowCanvasContext.translate((lCol * 64) + 32, (lRow * 64) + 32);
+        arrowCanvasContext.rotate(angleRAD);
+        arrowCanvasContext.drawImage(spriteImage, -32, -32);
+        arrowCanvasContext.restore();
+    }
+}
+
+function drawAllActions(phase = 0) {
+    arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
+    currentActions[phase].forEach(action => {
+        drawAction(action.location, action.notation, action.target);
+    });
+}
+
+// Input handling
+let selectedSpace = "";
+let selectedNotation = "";
+let spacesInRange = [];
+
+let mouseX = 0;
+let mouseY = 0;
+
+let currentActions = [[], [], []];
+let currentPhase = 0;
+let currentBoard = baseBoard;
+
+document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+});
+
+actionMenu.onmouseleave = () => {
+    if (actionMenu.style.display !== "none") {
+        selectedSpace = "";
+        actionMenu.style.display = "none";
+        drawAllActions(currentPhase);
+    }
+}
+
+actionSelectors.forEach(button => {
+    button.addEventListener('click', function () {
+        if (selectedSpace !== "") {
+            actionMenu.style.display = "none";
+            const range = this.dataset.range;
+
+            if (range === "0") {
+                const newAction = createAction(selectedSpace, this.name, selectedSpace, playerTeam, currentPhase);
+                currentActions[currentPhase].push(newAction);
+                drawAllActions(currentPhase);
+                selectedSpace = "";
+            } else {
+                selectedNotation = this.name;
+                const [lRow, lCol] = positionFromString(selectedSpace);
+                currentBoard.board.forEach((row, tRow) => {
+                    row.forEach((space, tCol) => {
+                        const distance = Math.abs(lRow - tRow) + Math.abs(lCol - tCol);
+                        if (distance == range) {
+                            target = positionFromID(tRow, tCol);
+                            drawAction(target);
+                            spacesInRange.push(target);
+                        }
+                    })
+                })
+            }
+        }
+    });
+});
+
+boardButtons.forEach(button => {
+    button.addEventListener('click', function () {
+        if (selectedNotation === "") {
+            if (!attemptDelete(this.name)) {
+                actionMenu.style.display = "block";
+                actionMenu.style.left = `${mouseX - 8}px`;
+                actionMenu.style.top = `${mouseY - 8}px`;
+                selectedSpace = this.name;
+                drawAction(selectedSpace);
+            }
+        } else if (selectedNotation !== "") {
+            spacesInRange.forEach(space => {
+                if (space === this.name) {
+                    const newAction = createAction(selectedSpace, selectedNotation, space, playerTeam, currentPhase);
+                    currentActions[currentPhase].push(newAction);
+                }
+            });
+            drawAllActions(currentPhase);
+            selectedSpace = "";
+            selectedNotation = "";
+            spacesInRange = [];
+        }
+    });
+});
+
+phaseSelectors.forEach(button => {
+    button.addEventListener('click', function () {
+        currentPhase = Number(this.name);
+        let selectedSpace = "";
+        let selectedNotation = "";
+        let spacesInRange = [];
+
+        if (currentPhase > 0) {
+            const simBoard = new BoardState(baseBoard);
+
+            for (let i = 0; i < currentPhase; i++) {
+                executePhase(currentActions[i], simBoard, true);
+                renderBoard(simBoard);
+            }
+        } else {
+            renderBoard(baseBoard);
+        }
+
+        drawAllActions(currentPhase);
     })
+})
+
+function createAction(location, notation, target, team, phase) {
+    const actionButton = document.createElement("button");
+    actionButton.innerHTML = `${location}${notation}${target}`;
+    actionFields[phase].appendChild(actionButton);
+    actionButton.addEventListener('click', function () {
+        attemptDelete(this.innerHTML.substring(0, 2));
+    });
+
+    const newAction = { location: location, notation: notation, target: target, team: team, phase: phase };
+    return newAction;
+}
+
+function attemptDelete(locationToDelete, phase = currentPhase) {
+    let actionFound = false;
+
+    currentActions[phase].forEach((action, i) => {
+        if (action.location === locationToDelete) {
+            currentActions[phase].splice(i, 1);
+            actionFields[phase].children[i].remove();
+            drawAllActions(phase);
+            actionFound = true;
+        }
+    });
+    return actionFound;
+}
+
+function deleteAllInputActions() {
+    currentActions.forEach((set, i) => {
+        set.forEach(action => {
+            attemptDelete(action.location, i);
+        });
+    });
+
+    //actionFields.forEach(field => {
+    //    field.innerHTML = "";
+    //});
 }
 
 // Add pieces in the starting position
