@@ -94,6 +94,7 @@
                 <canvas class="canvas" id="arrows" width="512" height="512"></canvas>
             </div>
         </div>
+
         <div class="game-mid">
             <button class="phase-selector" name="0">Phase 1</button>
             <div class="action-field"></div>
@@ -108,7 +109,20 @@
             <br />
 
             <button class="send">SEND ACTIONS</button>
+
+
+            <br />
+            <br />
+            <br />
+            <br />
+            <div class="game-over-window" style="display: none;">
+                X Wins!
+                <br />
+                <br />
+                <button>Rematch</button><button>New Opponent</button>
+            </div>
         </div>
+
         <div class="game-right">
             <div class="netcode-ui">
                 <button class="host-button">HOST</button><div class="host-code">----</div>
@@ -116,6 +130,7 @@
             </div>
         </div>
     </div>
+
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <script src="gameManagement.js"></script>
     <script src="netManagement.js"></script>

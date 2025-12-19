@@ -450,14 +450,35 @@ const actionObjects = [
         type: "convert",
         range: 2,
         exe(actionList, targetBoard, targetedSpaces) {
-            actionList.forEach(action => {
-                const [targetPiece, tRow, tCol] = targetBoard.getPieceAndCoords(action.target);
-                const actingPiece = targetBoard.getPiece(action.location);
+            // Create a set of successful move actions and failed convert actions
+            const pass = new Set();
+            const fail = new Set();
 
-                if (targetPiece) {
-                    targetPiece.team = actingPiece.team;
+            // Fail all colliding convert actions
+            actionList.forEach(action => {
+                if (fail.has(action)) {
+                    return;
                 }
-                targetedSpaces[tRow][tCol] = true;
+
+                actionList.forEach(otherAction => {
+                    if (action !== otherAction && action.target === otherAction.target) {
+                        fail.add(action);
+                        fail.add(otherAction);
+                        return;
+                    }
+                });
+            });
+
+            actionList.forEach(action => {
+                if (pass.has(action)) {
+                    const [targetPiece, tRow, tCol] = targetBoard.getPieceAndCoords(action.target);
+                    const actingPiece = targetBoard.getPiece(action.location);
+
+                    if (targetPiece) {
+                        targetPiece.team = actingPiece.team;
+                    }
+                    targetedSpaces[tRow][tCol] = true;
+                }
             });
         }
     },
@@ -635,12 +656,18 @@ function sortActionsByPhase(actions) {
 // Execute a set of actions in a single phase
 function executePhase(actions, targetBoard, rapid = false) {
     return new Promise((resolve) => {
+        // Create working copy of action list
+        const copiedActionList = [];
+        actions.forEach(action => {
+            copiedActionList.push(structuredClone(action));
+        });
+
 
         // Culls moves performed by invalid pieces and invalid targets
         const exhaustedPieces = new Set();
 
         const validActions = Array(actionObjects.length).fill(null).map(() => []);
-        actions.forEach(action => {
+        copiedActionList.forEach(action => {
             try {
                 const [actingPiece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
                 const [tRow, tCol] = positionFromString(action.target);
@@ -766,11 +793,39 @@ function executePhase(actions, targetBoard, rapid = false) {
 
 // TODO
 function disableBoard() {
-
+    actionFields.forEach(field => {
+        for (let i = 0; i < field.children.length; i++) {
+            field.children[i].disabled = true;
+        }
+    });
+    boardButtons.forEach(button => {
+        button.disabled = true;
+    });
+    phaseSelectors.forEach(button => {
+        button.disabled = true;
+    });
+    boardButtons.forEach(button => {
+        button.disabled = true;
+    });
+    sendButton.disabled = true;
 }
 
 function enableBoard() {
-
+    actionFields.forEach(field => {
+        for (let i = 0; i < field.children.length; i++) {
+            field.children[i].disabled = false;
+        }
+    });
+    boardButtons.forEach(button => {
+        button.disabled = false;
+    });
+    phaseSelectors.forEach(button => {
+        button.disabled = false;
+    });
+    boardButtons.forEach(button => {
+        button.disabled = false;
+    });
+    sendButton.disabled = false;
 }
 
 // Execute a series of actions
@@ -946,27 +1001,31 @@ phaseSelectors.forEach(button => {
         let selectedNotation = "";
         let spacesInRange = [];
 
-        if (currentPhase > 0) {
-            const simBoard = new BoardState(baseBoard);
-
-            for (let i = 0; i < currentPhase; i++) {
-                executePhase(currentActions[i], simBoard, true);
-                renderBoard(simBoard);
-            }
-        } else {
-            renderBoard(baseBoard);
-        }
-
-        drawAllActions(currentPhase);
+        simulateToPhase(currentPhase);
     })
 })
+
+function simulateToPhase(phase) {
+    if (phase > 0) {
+        const simBoard = new BoardState(baseBoard);
+
+        for (let i = 0; i < phase; i++) {
+            executePhase(currentActions[i], simBoard, true);
+            renderBoard(simBoard);
+        }
+    } else {
+        renderBoard(baseBoard);
+    }
+    drawAllActions(phase);
+}
 
 function createAction(location, notation, target, team, phase) {
     const actionButton = document.createElement("button");
     actionButton.innerHTML = `${location}${notation}${target}`;
     actionFields[phase].appendChild(actionButton);
     actionButton.addEventListener('click', function () {
-        attemptDelete(this.innerHTML.substring(0, 2));
+        attemptDelete(this.innerHTML.substring(0, 2), phase);
+        simulateToPhase(currentPhase);
     });
 
     const newAction = { location: location, notation: notation, target: target, team: team, phase: phase };
@@ -1000,18 +1059,36 @@ function deleteAllInputActions() {
 }
 
 // Add pieces in the starting position
-baseBoard.board[1][2] = new Piece("golem", "p");
-baseBoard.board[2][2] = new Piece("soldier", "p");
-baseBoard.board[1][3] = new Piece("monk", "p");
-baseBoard.board[1][4] = new Piece("soldier", "p");
-baseBoard.board[2][5] = new Piece("soldier", "p");
-baseBoard.board[1][5] = new Piece("golem", "p");
+function newGame() {
+    // First we clear all the pieces
+    baseBoard.board.forEach(row => {
+        row.forEach(piece => {
+            piece = null;
+        });
+    });
 
-baseBoard.board[6][2] = new Piece("golem", "g");
-baseBoard.board[5][2] = new Piece("soldier", "g");
-baseBoard.board[6][3] = new Piece("soldier", "g");
-baseBoard.board[6][4] = new Piece("monk", "g");
-baseBoard.board[5][5] = new Piece("soldier", "g");
-baseBoard.board[6][5] = new Piece("golem", "g");
+    // Reset the favour count
+    baseBoard.favour = 0;
 
-renderBoard(baseBoard);
+    // Remove any remaining actions
+    deleteAllInputActions();
+
+    // Then we add all the pieces in their starting positions
+    baseBoard.board[2][2] = new Piece("soldier", "p");
+    baseBoard.board[1][2] = new Piece("golem", "p");
+    baseBoard.board[1][3] = new Piece("monk", "p");
+    baseBoard.board[1][4] = new Piece("soldier", "p");
+    baseBoard.board[1][5] = new Piece("golem", "p");
+    baseBoard.board[2][5] = new Piece("soldier", "p");
+
+    baseBoard.board[5][2] = new Piece("soldier", "g");
+    baseBoard.board[6][2] = new Piece("golem", "g");
+    baseBoard.board[6][3] = new Piece("soldier", "g");
+    baseBoard.board[6][4] = new Piece("monk", "g");
+    baseBoard.board[6][5] = new Piece("golem", "g");
+    baseBoard.board[5][5] = new Piece("soldier", "g");
+
+    renderBoard(baseBoard);
+}
+
+newGame();

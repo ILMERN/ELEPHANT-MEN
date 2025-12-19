@@ -101,9 +101,11 @@ sendButton.addEventListener('click', function () {
         return;
     }
     if (!iSent) {
+        disableBoard();
         currentActions.forEach((set, i) => {
             myActions.push(...set);
         });
+        console.log(myActions);
         otherPeer.send(myActions);
         iSent = true;
 

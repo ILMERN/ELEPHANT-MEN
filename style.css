@@ -57,6 +57,10 @@ body {
         filter: brightness(0.5);
     }
 
+    .board-button:disabled {
+        filter: brightness(0.5);
+    }
+
 .piece {
     position: absolute;
     top: 0;
@@ -101,7 +105,10 @@ body {
 
 
 .netcode-ui {
-    width: 16rem;
+    width: fit-content;
+    outline: solid;
+    outline-width: 3px;
+    padding: 4px 4px 4px 4px;
 }
 
     .netcode-ui input {
@@ -119,3 +126,10 @@ body {
     .action-menu button {
         width: 10rem;
     }
+
+.game-over-window {
+    width: fit-content;
+    outline: solid;
+    outline-width: 3px;
+    padding: 4px 4px 4px 4px;
+}
