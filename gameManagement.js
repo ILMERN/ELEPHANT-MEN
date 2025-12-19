@@ -875,7 +875,7 @@ function drawAction(location, notation = "none", target = location) {
     const angleRAD = (Math.floor(angleDEG / 90) * Math.PI) / 2;
 
     const spriteImage = new Image();
-    let spriteName = "sprites/action";
+    let spriteName = "Sprites/action";
     switch (notation) {
         case ";":
             spriteName += "_self.png";
