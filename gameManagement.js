@@ -475,7 +475,10 @@ const actionObjects = [
                     const actingPiece = targetBoard.getPiece(action.location);
 
                     if (targetPiece) {
-                        targetPiece.team = actingPiece.team;
+                        if(targetPiece.team !== actingPiece.team) {
+                            targetPiece.team = actingPiece.team;
+                            addFavour(actingPiece.team, 3, targetBoard);
+                        }
                     }
                     targetedSpaces[tRow][tCol] = true;
                 }
