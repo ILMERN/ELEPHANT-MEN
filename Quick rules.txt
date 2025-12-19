@@ -1,0 +1,92 @@
+Action Format:
+xx?yy (eg. c3>c4)
+
+
+Unit Details:
+SOLDIER - 3HP
+> - Move
+. - Poke
+x - Cleave
+
+GOLEM - 4HP
+> - Shove
+; - Block
+x - Cleave
+
+MONK - 2HP
+> - Move
+. - Convert
+; - Pray
+
+
+Action Details:
+> MOVE - If target square is empty (or another unit is [MOVE]ing out of it), acting piece is now in target square. Two pieces attempting to [MOVE] into the same square are blocked, and both actions fail.
+Range: 1
+Rest: never
+Damage: 0
+
+; BLOCK - Reduces the damage of the next attack taken by 1. Effect ends before the next phase begins.
+Range: 0 (self)
+Rest: never
+Damage: 0
+
+. POKE - Long-range attack.
+Range: 2
+Rest: on miss
+Damage: 1
+
+x SHOVE - Like [MOVE], but pushes other pieces in a line if obstructed. Interacts with other [SHOVE] actions in the same way [MOVE] does to [MOVE] actions. For the purpose of interruptions, this action targets all spaces affected.
+Range: 1
+Rest: never
+Damage: 0
+
+. CONVERT - Target piece now belongs to the same team as the acting piece. All other properties of target piece are kept the same.
+Range: 2
+Rest: never
+Damage: 0
+
+x CLEAVE - Close-range attack.
+Range: 1
+Rest: always
+Damage: 2
+
+; PRAY - Grants team of acting player 1 favour.
+Range: 0 (self)
+Rest: always
+Damage: 0
+
+
+Action Order: 
+1. Move
+2. Block
+3. Poke
+4. Shove
+5. Convert
+6. Cleave
+7. Pray
+
+
+Mechanics:
+TURN: Before a turn starts, each player chooses 3 actions, one for each phase. After both players have selected their set of actions, they're revealed and occur simultaneously.
+PHASE: Each turn consists of 3 phases. The phases of a turn are resolved in sequence. Players must choose one piece to perform one action per phase. The same piece may act multiple times in the same turn but not in the same phase. Mechanically, all phases are identical.
+
+---// Not sure if I want to keep actions to 1 per phase or do something different. Requires testing.
+
+RANGE - All range is calculated without diagonals (manhattan distance) and is strict. For example, a piece may only move up, down, left, or right. Actions with a range of 2 may hit diagonally 1 space away, or up/down/left/right EXACTLY two spaces away.
+FAVOUR - Gain 7 favour your side to win. Favour is a global value, and one player gaining favour is equivalent to the other player losing the same amount (like tug-of-war). Gain 1 favour upon using pray. Gain 3 favour when an enemy piece is killed (including friendly fire) or converted.
+REST - A resting piece may not act until the end of the next phase. Any action attempted to be performed by a resting piece will fail.
+INTERRUPTION - All actions with range 1 or 2 can cause interruptions. If a piece is targeted by an action that occurs earlier in the Action Order, that piece's action will fail. Actions that fail (eg. when two pieces try to move into the same space) do not interrupt other actions.
+
+Starting Layout:
+c3 - GREEN SOLDIER - 3HP
+c2 - GREEN GOLEM - 4HP
+d2 - GREEN SOLDIER - 3HP
+e2 - GREEN MONK - 2HP
+f2 - GREEN GOLEM - 4HP
+f3 - GREEN SOLDIER - 3HP
+f6 - PURPLE SOLDIER - 3HP
+f7 - PURPLE GOLEM - 4HP
+e7 - PURPLE SOLDIER - 3HP
+d7 - PURPLE MONK - 2HP
+c7 - PURPLE GOLEM - 4HP
+c6 - PURPLE SOLDIER - 3HP

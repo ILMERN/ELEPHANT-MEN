@@ -1,0 +1,21 @@
+Gonna say this: I ain't going back and trying to remember what the shit I did before. This is only a changelog of changes going forward.
+
+18/12/2025
+- Fixed "shove" actions unable to be sent
+	↳ Actions passed through executePhase are copied into a local variable before passing so they can be altered
+	↳ TODO: Do the same within the "shove" action itself so that one can call its .exe without it altering the sent action list
+
+- Added golems back into the starting position
+
+- Added simultaneous convert detection, behaviour now mimics "move" action in how multiple actions targeting the same square cancel out
+
+
+19/12/2025
+- Added newGame function to make resetting gamestate easier
+
+- Allowed actions to be deleted from phases other than the currently selected phase
+
+- Dimmed board when actions are sent
+
+- Added "game over" window. (no functionality yet)
+	↳ Made it invisible to avoid confusion
