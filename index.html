@@ -16,80 +16,86 @@
             <button class="action-selector" name=";" data-range="0">(;) Block/Pray</button> <br />
         </div>
         <div class="game-left">
+            <div class="game-over-window" style="display: none;">
+                <div class="victory-message">X Wins!</div>
+                <br />
+                <br />
+                <button class="rematch-button">Rematch</button><button class="new-opponent-button">New Opponent</button>
+            </div>
             <div class="favour-count">Favour: 0</div>
             <div class="board">
                 <div class="squares-and-pieces">
-                    <button class="board-button" name="a8"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="b8"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="c8"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="d8"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="e8"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="f8"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="g8"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="h8"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="a8"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="b8"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="c8"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="d8"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="e8"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="f8"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="g8"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="h8"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
 
-                    <button class="board-button" name="a7"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="b7"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="c7"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="d7"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="e7"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="f7"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="g7"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="h7"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="a7"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="b7"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="c7"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="d7"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="e7"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="f7"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="g7"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="h7"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
 
-                    <button class="board-button" name="a6"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="b6"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="c6"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="d6"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="e6"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="f6"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="g6"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="h6"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="a6"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="b6"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="c6"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="d6"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="e6"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="f6"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="g6"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="h6"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
 
-                    <button class="board-button" name="a5"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="b5"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="c5"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="d5"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="e5"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="f5"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="g5"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="h5"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="a5"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="b5"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="c5"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="d5"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="e5"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="f5"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="g5"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="h5"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
 
-                    <button class="board-button" name="a4"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="b4"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="c4"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="d4"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="e4"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="f4"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="g4"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="h4"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="a4"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="b4"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="c4"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="d4"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="e4"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="f4"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="g4"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="h4"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
 
-                    <button class="board-button" name="a3"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="b3"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="c3"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="d3"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="e3"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="f3"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="g3"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="h3"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="a3"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="b3"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="c3"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="d3"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="e3"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="f3"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="g3"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="h3"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
 
-                    <button class="board-button" name="a2"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="b2"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="c2"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="d2"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="e2"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="f2"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="g2"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="h2"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="a2"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="b2"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="c2"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="d2"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="e2"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="f2"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="g2"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="h2"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
 
-                    <button class="board-button" name="a1"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="b1"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="c1"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="d1"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="e1"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="f1"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="g1"><img src="Sprites/Square_B.png"><img class="piece" src=""><div class="health-bar"></div></button>
-                    <button class="board-button" name="h1"><img src="Sprites/Square_W.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="a1"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="b1"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="c1"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="d1"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="e1"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="f1"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="g1"><img src="sprites/square_b.png"><img class="piece" src=""><div class="health-bar"></div></button>
+                    <button class="board-button" name="h1"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
                 </div>
                 <canvas class="canvas" id="arrows" width="512" height="512"></canvas>
             </div>
@@ -109,18 +115,6 @@
             <br />
 
             <button class="send">SEND ACTIONS</button>
-
-
-            <br />
-            <br />
-            <br />
-            <br />
-            <div class="game-over-window" style="display: none;">
-                X Wins!
-                <br />
-                <br />
-                <button>Rematch</button><button>New Opponent</button>
-            </div>
         </div>
 
         <div class="game-right">

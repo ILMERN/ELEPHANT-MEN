@@ -58,7 +58,7 @@ body {
     }
 
     .board-button:disabled {
-        filter: brightness(0.5);
+        filter: brightness(0.9);
     }
 
 .piece {

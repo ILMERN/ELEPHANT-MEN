@@ -19,6 +19,10 @@ const phaseSelectors = document.querySelectorAll('.phase-selector');
 const sendButton = document.querySelector('.send');
 const actionFields = document.querySelectorAll('.action-field');
 
+// Initialize game-over window
+const gameOverWindow = document.querySelector('.game-over-window');
+const victoryMessage = document.querySelector('.victory-message');
+
 // Time in ms between actions (hehe ebil number)
 let animDelay = 666;
 
@@ -156,20 +160,20 @@ function renderBoard(boardToRender = baseBoard) {
             if (piece.isResting) {
                 resting = "_resting";
             }
-            spriteName = `Sprites/${piece.type}_${piece.team}${resting}.png`;
+            spriteName = `sprites/${piece.type}_${piece.team}${resting}.png`;
 
             const currentHealth = piece.currentHealth;
             const missingHealth = piece.maxHealth - currentHealth;
 
             for (let i = 0; i < missingHealth; i++) {
                 const healthSprite = document.createElement("img");
-                healthSprite.src = "Sprites/HP_0.png";
+                healthSprite.src = "sprites/hp_0.png";
                 healthBar.appendChild(healthSprite);
             }
 
             for (let i = 0; i < currentHealth; i++) {
                 const healthSprite = document.createElement("img");
-                healthSprite.src = "Sprites/HP_1.png";
+                healthSprite.src = "sprites/hp_1.png";
                 healthBar.appendChild(healthSprite);
             }
         }
@@ -451,7 +455,6 @@ const actionObjects = [
         range: 2,
         exe(actionList, targetBoard, targetedSpaces) {
             // Create a set of successful move actions and failed convert actions
-            const pass = new Set();
             const fail = new Set();
 
             // Fail all colliding convert actions
@@ -470,7 +473,7 @@ const actionObjects = [
             });
 
             actionList.forEach(action => {
-                if (pass.has(action)) {
+                if (!fail.has(action)) {
                     const [targetPiece, tRow, tCol] = targetBoard.getPieceAndCoords(action.target);
                     const actingPiece = targetBoard.getPiece(action.location);
 
@@ -506,7 +509,8 @@ const actionObjects = [
         range: 0,
         exe(actionList, targetBoard, targetedSpaces) {
             actionList.forEach(action => {
-                addFavour(targetBoard.getPiece(action.location).team, 1, targetBoard);
+                const actingPiece = targetBoard.getPiece(action.location);
+                addFavour(actingPiece.team, 1, targetBoard);
                 actingPiece.isResting = true;
             });
         }
@@ -838,12 +842,40 @@ async function executeActions(actions, targetBoard) {
 
     for (const phase of phases) {
         await executePhase(phase, targetBoard);
+        if (Math.abs(targetBoard.favour) >= 7) {
+            const winningTeam = (() => {
+                switch (Math.sign(targetBoard.favour)) {
+                    case 1: return "g";
+                    case -1: return "p"
+                    default: return "";
+                }
+            })();
+            gameOver(winningTeam, "favour victory");
+            break;
+        }
     }
     enableBoard();
 }
 
+// Function that gets called when one player wins
+function gameOver(winningTeam, cause = "") {
+    disableBoard();
+    gameOverWindow.style.display = "block";
+
+    let message = "";
+    switch (winningTeam) {
+        case "g": message = "Green wins"; break;
+        case "p": message = "Purple wins"; break;
+    }
+
+    if (cause !== "") {
+        message += ` - ${cause}`;
+    }
+
+    victoryMessage.innerHTML = message;
+}
+
 function addFavour(team, amount, board) {
-    console.log(`${team}, ${amount}, ${board}`);
     if (team === "g") {
         board.favour += amount;
     } else {
@@ -878,7 +910,7 @@ function drawAction(location, notation = "none", target = location) {
     const angleRAD = (Math.floor(angleDEG / 90) * Math.PI) / 2;
 
     const spriteImage = new Image();
-    let spriteName = "Sprites/action";
+    let spriteName = "sprites/action";
     switch (notation) {
         case ";":
             spriteName += "_self.png";
@@ -1093,5 +1125,3 @@ function newGame() {
 
     renderBoard(baseBoard);
 }
-
-newGame();

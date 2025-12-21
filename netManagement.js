@@ -3,6 +3,8 @@ const hostButton = document.querySelector('.host-button');
 const joinButton = document.querySelector('.join-button');
 const hostCode = document.querySelector('.host-code');
 const joinCode = document.querySelector('.join-code');
+const rematchButton = document.querySelector('.rematch-button');
+const newOpponentButton = document.querySelector('.new-opponent-button');
 
 // Create connection handling variables
 let connectMode = 'none';
@@ -39,7 +41,7 @@ hostButton.addEventListener('click', function () {
             hostCode.innerHTML = peerID.slice(peerID.length - codeLength, peerID.length);
         })
         peer.on('connection', function (conn) {
-            console.log('Connected!');
+            newGame();
             otherPeer = conn;
             otherPeer.on('data', function (data) {
                 handleData(data);
@@ -65,7 +67,7 @@ joinButton.addEventListener('click', function () {
                 handleData(data);
             })
             otherPeer.on('open', function () {
-                console.log('Connected!');
+                newGame();
             })
         })
     }
