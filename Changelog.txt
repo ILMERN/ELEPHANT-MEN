@@ -3,7 +3,6 @@ Gonna say this: I ain't going back and trying to remember what the shit I did be
 18/12/2025
 - Fixed "shove" actions unable to be sent
 	↳ Actions passed through executePhase are copied into a local variable before passing so they can be altered
-	↳ TODO: Do the same within the "shove" action itself so that one can call its .exe without it altering the sent action list
 
 - Added golems back into the starting position
 
@@ -17,5 +16,31 @@ Gonna say this: I ain't going back and trying to remember what the shit I did be
 
 - Dimmed board when actions are sent
 
-- Added "game over" window. (no functionality yet)
-	↳ Made it invisible to avoid confusion
+- Added "game over" window. (invisible, no functionality yet)
+
+-------------------- COMMIT --------------------
+
+21/12/2025
+- Begun normalizing file name capitalisation
+- Fixed convert always failing
+- Fixed uncaught error in pray
+- newGame() is now only called once successfully connected to an opponent
+
+-------------------- COMMIT --------------------
+
+22/12/2025
+- Added timeout to join attempt
+
+23/12/2025
+- Added functionality to game over window
+- Added cancel-host button so host can canel hosting before being joined
+- Added timeout to host if they fail to connect to peerJS server
+- Join code is now always appears uppercase
+- Actions within the "shove" action are now copies so that .exe() can be called without it altering the sent action list
+- Fixed deleteAllInputActions()
+- Moved netcode-ui to above the gameboard, hide when connected to opponent
+
+- TODO:
+	↳ Rework executePhase function so missed actions are shown
+	↳ Add player-visible console to track/explain all actions
+	↳ Handle disconnections

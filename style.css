@@ -115,6 +115,10 @@ body {
         width: 4rem;
     }
 
+.join-code {
+    text-transform: uppercase;
+}
+
 .action-menu {
     position: absolute;
     z-index: 8;

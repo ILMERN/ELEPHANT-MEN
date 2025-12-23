@@ -22,6 +22,9 @@ const actionFields = document.querySelectorAll('.action-field');
 // Initialize game-over window
 const gameOverWindow = document.querySelector('.game-over-window');
 const victoryMessage = document.querySelector('.victory-message');
+const rematchNotification = document.querySelector('.rematch-notification');
+const rematchButton = document.querySelector('.rematch-button');
+const newOpponentButton = document.querySelector('.new-opponent-button');
 
 // Time in ms between actions (hehe ebil number)
 let animDelay = 666;
@@ -93,6 +96,11 @@ class BoardState {
         }
     }
 
+    clearBoard() {
+        this.board = Array(8).fill(null).map(() => Array(8).fill(null));
+        this.favour = 0;
+    }
+
     getPieceAndCoords(position) {
         if (position.length != 2) {
             return null;
@@ -112,6 +120,7 @@ class BoardState {
 
         return [this.board[rowIndex][colIndex], rowIndex, colIndex];
     }
+
     getPiece(position) {
         if (position.length != 2) {
             return null;
@@ -318,6 +327,10 @@ const actionObjects = [
 
             // Create series of "fake" shove actions performed by targeted pieces
             const fakeShoves = [];
+            const originalShoves = [];
+            actionList.forEach(action => {
+                originalShoves.push(structuredClone(action));
+            });
 
             function failAll(action) {
                 if ("root" in action) {
@@ -357,12 +370,12 @@ const actionObjects = [
                     }
                 }
             }
-            actionList.forEach(action => {
+            originalShoves.forEach(action => {
                 checkAction(action);
             });
 
             // Add all fake actions to action list
-            let allShoves = [...actionList, ...fakeShoves];
+            let allShoves = [...originalShoves, ...fakeShoves];
 
             // Fail all colliding shove actions
             allShoves.forEach(action => {
@@ -857,6 +870,47 @@ async function executeActions(actions, targetBoard) {
     enableBoard();
 }
 
+// Start a new game, setting pieces up in the starting position
+function newGame() {
+    // First we clear all the pieces
+    baseBoard.board.forEach(row => {
+        row.forEach(piece => {
+            piece = null;
+        });
+    });
+
+    // Reset the favour count
+    baseBoard.favour = 0;
+
+    // Remove any remaining actions
+    deleteAllInputActions();
+
+    // Remove all remaining pieces
+    baseBoard.clearBoard();
+
+    // Then we add all the pieces in their starting positions
+    baseBoard.board[2][2] = new Piece("soldier", "p");
+    baseBoard.board[1][2] = new Piece("golem", "p");
+    baseBoard.board[1][3] = new Piece("monk", "p");
+    baseBoard.board[1][4] = new Piece("soldier", "p");
+    baseBoard.board[1][5] = new Piece("golem", "p");
+    baseBoard.board[2][5] = new Piece("soldier", "p");
+
+    baseBoard.board[5][2] = new Piece("soldier", "g");
+    baseBoard.board[6][2] = new Piece("golem", "g");
+    baseBoard.board[6][3] = new Piece("soldier", "g");
+    baseBoard.board[6][4] = new Piece("monk", "g");
+    baseBoard.board[6][5] = new Piece("golem", "g");
+    baseBoard.board[5][5] = new Piece("soldier", "g");
+
+    // Disable game over window
+    gameOverWindow.style.display = "none";
+
+    // Enable and render the board
+    enableBoard();
+    renderBoard(baseBoard);
+}
+
 // Function that gets called when one player wins
 function gameOver(winningTeam, cause = "") {
     disableBoard();
@@ -873,6 +927,8 @@ function gameOver(winningTeam, cause = "") {
     }
 
     victoryMessage.innerHTML = message;
+    rematchButton.disabled = false;
+    rematchNotification.innerHTML = "<br />";
 }
 
 function addFavour(team, amount, board) {
@@ -1082,46 +1138,18 @@ function attemptDelete(locationToDelete, phase = currentPhase) {
 }
 
 function deleteAllInputActions() {
+    const actionList = [];
     currentActions.forEach((set, i) => {
         set.forEach(action => {
-            attemptDelete(action.location, i);
+            actionList.push([action, i]);
         });
+    });
+
+    actionList.forEach(action => {
+        attemptDelete(action[0].location, action[1]);
     });
 
     //actionFields.forEach(field => {
     //    field.innerHTML = "";
     //});
-}
-
-// Add pieces in the starting position
-function newGame() {
-    // First we clear all the pieces
-    baseBoard.board.forEach(row => {
-        row.forEach(piece => {
-            piece = null;
-        });
-    });
-
-    // Reset the favour count
-    baseBoard.favour = 0;
-
-    // Remove any remaining actions
-    deleteAllInputActions();
-
-    // Then we add all the pieces in their starting positions
-    baseBoard.board[2][2] = new Piece("soldier", "p");
-    baseBoard.board[1][2] = new Piece("golem", "p");
-    baseBoard.board[1][3] = new Piece("monk", "p");
-    baseBoard.board[1][4] = new Piece("soldier", "p");
-    baseBoard.board[1][5] = new Piece("golem", "p");
-    baseBoard.board[2][5] = new Piece("soldier", "p");
-
-    baseBoard.board[5][2] = new Piece("soldier", "g");
-    baseBoard.board[6][2] = new Piece("golem", "g");
-    baseBoard.board[6][3] = new Piece("soldier", "g");
-    baseBoard.board[6][4] = new Piece("monk", "g");
-    baseBoard.board[6][5] = new Piece("golem", "g");
-    baseBoard.board[5][5] = new Piece("soldier", "g");
-
-    renderBoard(baseBoard);
 }

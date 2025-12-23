@@ -16,13 +16,18 @@
             <button class="action-selector" name=";" data-range="0">(;) Block/Pray</button> <br />
         </div>
         <div class="game-left">
+            <div class="netcode-ui">
+                <button class="host-button">HOST</button><button class="cancel-host-button" disabled>CANCEL</button><div class="host-code">----</div>
+                <input type="text" placeholder="CODE" class="join-code" /><button class="join-button">JOIN</button>
+            </div>
             <div class="game-over-window" style="display: none;">
                 <div class="victory-message">X Wins!</div>
                 <br />
+                <div class="rematch-notification"><br /></div>
                 <br />
                 <button class="rematch-button">Rematch</button><button class="new-opponent-button">New Opponent</button>
             </div>
-            <div class="favour-count">Favour: 0</div>
+            <div class="favour-count">Favour: 0 (Neutral)</div>
             <div class="board">
                 <div class="squares-and-pieces">
                     <button class="board-button" name="a8"><img src="sprites/square_w.png"><img class="piece" src=""><div class="health-bar"></div></button>
@@ -118,10 +123,6 @@
         </div>
 
         <div class="game-right">
-            <div class="netcode-ui">
-                <button class="host-button">HOST</button><div class="host-code">----</div>
-                <input type="text" placeholder="CODE" class="join-code" /><button class="join-button">JOIN</button>
-            </div>
         </div>
     </div>
 
