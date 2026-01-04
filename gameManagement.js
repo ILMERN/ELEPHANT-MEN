@@ -29,6 +29,24 @@ const newOpponentButton = document.querySelector('.new-opponent-button');
 // Time in ms between actions (hehe ebil number)
 let animDelay = 666;
 
+// Cache image sprites into spriteCache variable
+const spritesToLoad = [
+    "sprites/action_none.png",
+    "sprites/action_close.png",
+    "sprites/action_far.png",
+    "sprites/action_far_d.png",
+    "sprites/action_move.png",
+    "sprites/action_self.png"
+]
+const spriteCache = {};
+spritesToLoad.forEach(spriteName => {
+    const thisSprite = new Image();
+    thisSprite.src = spriteName;
+    thisSprite.onload = function () {
+        spriteCache[spriteName] = thisSprite;
+    }
+});
+
 // Take in a position and give the opposite square (e.g. "f3" -> "c6")
 function invertPosition(position) {
     if (position.length != 2) {
@@ -195,6 +213,7 @@ function renderBoard(boardToRender = baseBoard) {
 const actionObjects = [
     {
         type: "move",
+        notation: ">",
         range: 1,
         exe(actionList, targetBoard, targetedSpaces) {
             // Create a set of successful move actions and failed move actions
@@ -262,22 +281,22 @@ const actionObjects = [
                     if (holder) {
                         [targetBoard.board[tRow][tCol], holder] = [holder, targetBoard.board[tRow][tCol]];
                         done.add(action);
-                        targetedSpaces[tRow][tCol] = true;
+                        targetedSpaces.add(action.target);
                         if (holder) {
                             executeMove(otherAction, holder);
                         }
                     } else if (otherAction === undefined || otherAction.target !== action.location) {
                         [holder, targetBoard.board[lRow][lCol]] = [targetBoard.board[lRow][lCol], holder];
                         [targetBoard.board[tRow][tCol], holder] = [holder, targetBoard.board[tRow][tCol]];
-                        targetedSpaces[tRow][tCol] = true;
+                        targetedSpaces.add(action.target);
                         done.add(action);
                         if (holder) {
                             executeMove(otherAction, holder);
                         }
                     } else {
                         [targetBoard.board[lRow][lCol], targetBoard.board[tRow][tCol]] = [targetBoard.board[tRow][tCol], targetBoard.board[lRow][lCol]];
-                        targetedSpaces[tRow][tCol] = true;
-                        targetedSpaces[lRow][lCol] = true;
+                        targetedSpaces.add(action.target);
+                        targetedSpaces.add(action.location);
                         done.add(action);
                         done.add(otherAction);
                     }
@@ -293,6 +312,7 @@ const actionObjects = [
     },
     {
         type: "block",
+        notation: ";",
         range: 0,
         exe(actionList, targetBoard, targetedSpaces) {
             actionList.forEach(action => {
@@ -303,6 +323,7 @@ const actionObjects = [
     },
     {
         type: "poke",
+        notation: ".",
         range: 2,
         exe(actionList, targetBoard, targetedSpaces) {
             actionList.forEach(action => {
@@ -313,12 +334,13 @@ const actionObjects = [
                     const actingPiece = targetBoard.getPiece(action.location);
                     actingPiece.isResting = true;
                 }
-                targetedSpaces[tRow][tCol] = true;
+                targetedSpaces.add(action.target);
             });
         }
     },
     {
         type: "shove",
+        notation: ">",
         range: 1,
         exe(actionList, targetBoard, targetedSpaces) {
             // Create a set of successful shove actions and failed shove actions
@@ -434,22 +456,22 @@ const actionObjects = [
                     if (holder) {
                         [targetBoard.board[tRow][tCol], holder] = [holder, targetBoard.board[tRow][tCol]];
                         done.add(action);
-                        targetedSpaces[tRow][tCol] = true;
+                        targetedSpaces.add(action.target);
                         if (holder) {
                             executeMove(otherAction, holder);
                         }
                     } else if (otherAction === undefined || otherAction.target !== action.location) {
                         [holder, targetBoard.board[lRow][lCol]] = [targetBoard.board[lRow][lCol], holder];
                         [targetBoard.board[tRow][tCol], holder] = [holder, targetBoard.board[tRow][tCol]];
-                        targetedSpaces[tRow][tCol] = true;
+                        targetedSpaces.add(action.target);
                         done.add(action);
                         if (holder) {
                             executeMove(otherAction, holder);
                         }
                     } else {
                         [targetBoard.board[lRow][lCol], targetBoard.board[tRow][tCol]] = [targetBoard.board[tRow][tCol], targetBoard.board[lRow][lCol]];
-                        targetedSpaces[tRow][tCol] = true;
-                        targetedSpaces[lRow][lCol] = true;
+                        targetedSpaces.add(action.target);
+                        targetedSpaces.add(action.location);
                         done.add(action);
                         done.add(otherAction);
                     }
@@ -465,6 +487,7 @@ const actionObjects = [
     },
     {
         type: "convert",
+        notation: ".",
         range: 2,
         exe(actionList, targetBoard, targetedSpaces) {
             // Create a set of successful move actions and failed convert actions
@@ -491,18 +514,19 @@ const actionObjects = [
                     const actingPiece = targetBoard.getPiece(action.location);
 
                     if (targetPiece) {
-                        if(targetPiece.team !== actingPiece.team) {
+                        if (targetPiece.team !== actingPiece.team) {
                             targetPiece.team = actingPiece.team;
                             addFavour(actingPiece.team, 3, targetBoard);
                         }
                     }
-                    targetedSpaces[tRow][tCol] = true;
+                    targetedSpaces.add(action.target);
                 }
             });
         }
     },
     {
         type: "cleave",
+        notation: "x",
         range: 1,
         exe(actionList, targetBoard, targetedSpaces) {
             actionList.forEach(action => {
@@ -512,13 +536,14 @@ const actionObjects = [
                     targetPiece.damage(2);
                 }
                 actingPiece.isResting = true;
-                targetedSpaces[tRow][tCol] = true;
+                targetedSpaces.add(action.target);
             });
 
         }
     },
     {
         type: "pray",
+        notation: ";",
         range: 0,
         exe(actionList, targetBoard, targetedSpaces) {
             actionList.forEach(action => {
@@ -535,29 +560,29 @@ const pieceObjects = [
     {
         type: "soldier",
         health: 3,
-        availableActions: [
-            { type: "move", notation: ">" },
-            { type: "poke", notation: "." },
-            { type: "cleave", notation: "x" }
-        ]
+        availableActions: new Set([
+            actionObjects[0], // Move
+            actionObjects[2], // Poke
+            actionObjects[5] // Cleave
+        ])
     },
     {
         type: "monk",
         health: 2,
-        availableActions: [
-            { type: "move", notation: ">" },
-            { type: "convert", notation: "." },
-            { type: "pray", notation: ";" }
-        ]
+        availableActions: new Set([
+            actionObjects[0], // Move
+            actionObjects[4], // Convert
+            actionObjects[6] // Pray
+        ])
     },
     {
         type: "golem",
         health: 4,
-        availableActions: [
-            { type: "shove", notation: ">" },
-            { type: "cleave", notation: "x" },
-            { type: "block", notation: ";" }
-        ]
+        availableActions: new Set([
+            actionObjects[1], // Block
+            actionObjects[3], // Shove
+            actionObjects[5] // Cleave
+        ])
     }
 ];
 
@@ -674,7 +699,7 @@ function sortActionsByPhase(actions) {
 }
 
 // Execute a set of actions in a single phase
-function executePhase(actions, targetBoard, rapid = false) {
+async function executePhase(actions, targetBoard, rapid = false) {
     return new Promise((resolve) => {
         // Create working copy of action list
         const copiedActionList = [];
@@ -683,109 +708,162 @@ function executePhase(actions, targetBoard, rapid = false) {
         });
 
 
-        // Culls moves performed by invalid pieces and invalid targets
-        const exhaustedPieces = new Set();
-
-        const validActions = Array(actionObjects.length).fill(null).map(() => []);
+        // Culls actions by distance
+        const validActions = [];
         copiedActionList.forEach(action => {
-            try {
-                const [actingPiece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
-                const [tRow, tCol] = positionFromString(action.target);
+            const [actingPiece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
+            const [tRow, tCol] = positionFromString(action.target);
 
-                // Check if there is a piece of the right team on the action location
-                if (!actingPiece || actingPiece.team != action.team) {
-                    // TODO - write error message
-                    throw new Error(`${action.location}${action.notation}${action.target} failed: invalid piece`);
-                }
+            // Check to ensure target is exactly within range
+            const actionOrder = actionObjects.findIndex(ob => ob.notation === action.notation);
+            const actionObject = actionObjects[actionOrder];
+            const targetDistance = Math.abs(lRow - tRow) + Math.abs(lCol - tCol);
 
-                // Check to ensure acting piece can use specified move
-                const usableAction = actingPiece.availableActions.find(at => at.notation === action.notation);
-
-                if (!usableAction) {
-                    // TODO - write error message
-                    throw new Error(`Action ${action.location}${action.notation}${action.target} failed: invalid notation`);
-                }
-                if (actingPiece.isResting) {
-                    // TODO - write error message
-                    throw new Error(`Action ${action.location}${action.notation}${action.target} failed: piece is resting`);
-                }
-
-                // Check if piece has taken an action this turn already
-                if (exhaustedPieces.has(actingPiece)) {
-                    // TODO - write error message
-                    throw new Error(`Action ${action.location}${action.notation}${action.target} failed: piece has too many actions.`);
-                }
-
-                // Check to ensure target is exactly within range
-                const actionOrder = actionObjects.findIndex(ob => ob.type === usableAction.type);
-                const actionObject = actionObjects[actionOrder];
-                const targetDistance = Math.abs(lRow - tRow) + Math.abs(lCol - tCol);
-
-                if (targetDistance != actionObject.range) {
-                    // TODO - write error message
-                    throw new Error(`Action ${action.location}${action.notation}${action.target} failed: target out of range`);
-                }
-
-                // Action is successful
-                validActions[actionOrder].push(action);
-                exhaustedPieces.add(actingPiece);
-                actingPiece.currentAction = actionObjects[actionOrder].type;
-
-            } catch (e) {
-                console.log(e);
+            if (targetDistance === actionObject.range) {
+                validActions.push(action);
             }
-
         });
 
-        // De-rests all pieces
+        // Two sets to ensure each piece only acts, and each action is only performed, once
+        const exhaustedPieces = new Set();
+        const completedActions = new Set();
+
+        // Adds currently resting pieces to exhaustedPieces set and de-rests them
         targetBoard.board.forEach(row => {
             row.forEach(piece => {
-                if (piece !== null) {
+                if (piece?.isResting) {
+                    exhaustedPieces.add(piece);
                     piece.isResting = false;
                 }
             });
         });
 
-        renderBoard(targetBoard);
+        if (!rapid) {
+            renderBoard(targetBoard);
+            drawActionsInArray(validActions);
+        }
 
-        let targetedSpaces = Array(8).fill(null).map(() => Array(8).fill(null));
+
+        let targetedSpaces = new Set();
         let currentDelay = 0;
         if (!rapid) {
             currentDelay += animDelay;
         }
+        const boardSnapshots = [];
 
         // Executes all remaining actions in order, culling for interruptions and dead pieces along the way
-        actionObjects.forEach((obj, i) => {
-            // Check for interruptions
-            const successfulActions = [];
-            validActions[i].forEach(action => {
-                const [piece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
+        // God I love if() statements
+        actionObjects.forEach((actionObject, actionOrder) => {
+            const actionsToExecute = [];
+            let actionFound = false;
 
-
-
-                if (piece?.isDead) {
-                    addFavour(oppositeTeam(piece.team), 3, targetBoard);
-                    targetBoard.board[lRow][lCol] = null;
-                } else if (!targetedSpaces[lRow][lCol]) {
-                    successfulActions.push(action);
-                    if (!rapid) {
-                        drawAction(action.location, action.notation, action.target);
-                    }
+            // First we do more culling
+            for (let i = 0; i < validActions.length; i++) {
+                // Does this action have the correct notation?
+                const action = validActions[i];
+                if (action.notation !== actionObject.notation) {
+                    continue;
                 }
-            });
-            if (successfulActions.length !== 0) {
-                const actionList = [...successfulActions];
+
+                // Has the action already been performed?
+                if (completedActions.has(action)) {
+                    continue;
+                }
+
+                // Was this action interrupted?
+                if (targetedSpaces.has(action.location)) {
+                    continue;
+                }
+
+                // Is there a piece in the correct location?
+                const [actingPiece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
+                if (actingPiece === null) {
+                    continue;
+                }
+
+                // Has this piece already acted?
+                if (exhaustedPieces.has(actingPiece)) {
+                    continue;
+                }
+
+                // Was the action performed by the correct team?
+                if (actingPiece.team !== action.team) {
+                    continue;
+                }
+
+                // Is the piece able to perform this action?
+                if (!actingPiece.availableActions.has(actionObject)) {
+                    continue;
+                }
+
+                // Action has passed culling, the action goes through
+                actionsToExecute.push(action);
+                actingPiece.currentAction = actionObjects[actionOrder].type;
+                exhaustedPieces.add(actingPiece);
+                completedActions.add(action);
+                actionFound = true;
+            }
+
+            // Put all actions of this type into an array to execute
+            if (actionFound) {
+                // Build the animation if rapid = false
                 if (!rapid) {
-                    setTimeout(() => {
-                        obj.exe?.(actionList, targetBoard, targetedSpaces);
-                        renderBoard(targetBoard);
-                    }, currentDelay);
-                    currentDelay += animDelay;
-                } else {
-                    obj.exe?.(actionList, targetBoard, targetedSpaces);
+                    boardSnapshots.push({ board: new BoardState(targetBoard), actions: actionsToExecute });
                 }
+                actionObject.exe?.(actionsToExecute, targetBoard, targetedSpaces);
+                arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
+                clearDeadPieces(targetBoard);
             }
         });
+
+        // Now we animate the animation if the rapid = false
+        if (!rapid) {
+            boardSnapshots.forEach(snapshot => {
+                setTimeout(() => {
+                    renderBoard(snapshot.board);
+                    drawActionsInArray(snapshot.actions);
+                }, currentDelay);
+                currentDelay += animDelay;
+            });
+
+            // These are the actions that didn't make it through, for whatever reason
+            // Flashing animation
+            const incompleteActions = [];
+            validActions.forEach(action => {
+                if (!completedActions.has(action)) {
+                    incompleteActions.push(action);
+                }
+            });
+            if (incompleteActions.length !== 0) {
+                setTimeout(() => {
+                    renderBoard(targetBoard);
+                    arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
+                }, currentDelay);
+                currentDelay += animDelay / 2;
+
+                setTimeout(() => {
+                    drawActionsInArray(incompleteActions);
+                }, currentDelay);
+                currentDelay += animDelay / 2;
+
+                setTimeout(() => {
+                    arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
+                }, currentDelay);
+                currentDelay += animDelay / 2;
+
+                setTimeout(() => {
+                    drawActionsInArray(incompleteActions);
+                }, currentDelay);
+                currentDelay += animDelay / 2;
+            }
+
+            // A little buffer before gameplay continues
+            setTimeout(() => {
+                renderBoard(targetBoard);
+                arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
+            }, currentDelay);
+            currentDelay += animDelay / 2;
+        }
 
         // And after everything is done
         setTimeout(() => {
@@ -794,24 +872,29 @@ function executePhase(actions, targetBoard, rapid = false) {
                 row.forEach((piece, y) => {
                     if (piece !== null) {
                         piece.resetAction();
-                        if (piece.isDead) {
-                            addFavour(oppositeTeam(piece.team), 3, targetBoard);
-                            targetBoard.board[x][y] = null;
-                        }
                     }
                 });
             });
+            renderBoard(targetBoard);
             arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
-            if (!rapid) {
-                renderBoard(targetBoard);
-            }
             resolve();
         }, currentDelay);
     });
 }
 
+// Clears all dead pieces and 
+function clearDeadPieces(targetBoard) {
+    targetBoard.board.forEach((row, x) => {
+        row.forEach((piece, y) => {
+            if (piece?.isDead) {
+                addFavour(oppositeTeam(piece.team), 3, targetBoard);
+                targetBoard.board[x][y] = null;
+            }
+        });
+    });
+}
 
-// TODO
+// Disables the board for after actions are sent and during gameplay animations
 function disableBoard() {
     actionFields.forEach(field => {
         for (let i = 0; i < field.children.length; i++) {
@@ -830,6 +913,7 @@ function disableBoard() {
     sendButton.disabled = true;
 }
 
+// Reenables board to allow actions to be queued
 function enableBoard() {
     actionFields.forEach(field => {
         for (let i = 0; i < field.children.length; i++) {
@@ -848,7 +932,7 @@ function enableBoard() {
     sendButton.disabled = false;
 }
 
-// Execute a series of actions
+// Execute a full set of phases of actions
 async function executeActions(actions, targetBoard) {
     arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
     const phases = sortActionsByPhase(actions);
@@ -965,7 +1049,6 @@ function drawAction(location, notation = "none", target = location) {
     const angleDEG = (Math.atan2(tRow - lRow, tCol - lCol) * 180) / Math.PI;
     const angleRAD = (Math.floor(angleDEG / 90) * Math.PI) / 2;
 
-    const spriteImage = new Image();
     let spriteName = "sprites/action";
     switch (notation) {
         case ";":
@@ -988,17 +1071,24 @@ function drawAction(location, notation = "none", target = location) {
             spriteName += "_none.png";
             break;
     }
-    spriteImage.src = spriteName;
+    const spriteImage = spriteCache[spriteName];
 
-    spriteImage.onload = function () {
-        arrowCanvasContext.save()
-        arrowCanvasContext.translate((lCol * 64) + 32, (lRow * 64) + 32);
-        arrowCanvasContext.rotate(angleRAD);
-        arrowCanvasContext.drawImage(spriteImage, -32, -32);
-        arrowCanvasContext.restore();
-    }
+    arrowCanvasContext.save()
+    arrowCanvasContext.translate((lCol * 64) + 32, (lRow * 64) + 32);
+    arrowCanvasContext.rotate(angleRAD);
+    arrowCanvasContext.drawImage(spriteImage, -32, -32);
+    arrowCanvasContext.restore();
 }
 
+// Draw all actions in an array
+function drawActionsInArray(actionList) {
+    arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
+    actionList.forEach(action => {
+        drawAction(action.location, action.notation, action.target);
+    });
+}
+
+// Draw all actions in a phase
 function drawAllActions(phase = 0) {
     arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
     currentActions[phase].forEach(action => {
@@ -1093,15 +1183,15 @@ phaseSelectors.forEach(button => {
         let spacesInRange = [];
 
         simulateToPhase(currentPhase);
-    })
-})
+    });
+});
 
-function simulateToPhase(phase) {
+async function simulateToPhase(phase) {
     if (phase > 0) {
         const simBoard = new BoardState(baseBoard);
 
         for (let i = 0; i < phase; i++) {
-            executePhase(currentActions[i], simBoard, true);
+            await executePhase(currentActions[i], simBoard, true);
             renderBoard(simBoard);
         }
     } else {

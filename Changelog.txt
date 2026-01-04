@@ -3,19 +3,14 @@ Gonna say this: I ain't going back and trying to remember what the shit I did be
 18/12/2025
 - Fixed "shove" actions unable to be sent
 	↳ Actions passed through executePhase are copied into a local variable before passing so they can be altered
-
 - Added golems back into the starting position
-
 - Added simultaneous convert detection, behaviour now mimics "move" action in how multiple actions targeting the same square cancel out
 
 
 19/12/2025
 - Added newGame function to make resetting gamestate easier
-
 - Allowed actions to be deleted from phases other than the currently selected phase
-
 - Dimmed board when actions are sent
-
 - Added "game over" window. (invisible, no functionality yet)
 
 -------------------- COMMIT --------------------
@@ -35,15 +30,44 @@ Gonna say this: I ain't going back and trying to remember what the shit I did be
 - Added functionality to game over window
 - Added cancel-host button so host can canel hosting before being joined
 - Added timeout to host if they fail to connect to peerJS server
-- Join code is now always appears uppercase
+- Join code now always appears uppercase
 - Actions within the "shove" action are now copies so that .exe() can be called without it altering the sent action list
 - Fixed deleteAllInputActions()
 - Moved netcode-ui to above the gameboard, hide when connected to opponent
 
 -------------------- COMMIT --------------------
 
+29/12/2025
+- Started reworking executePhase function
+- It's hard to get back into the swing of things after christmas cut me some slack
+
+02/01/2026
+- See above but replace christmas with new years
+- Everything's broken now but it can be rebuilt
+
+03/01/2026
+- The animations are a little fucky but the rework is nearly done :prayge:
+
+04/01/2026
+- Added image cache for arrows drawn to canvas
+- Added animation for failed actions
+- Fixed interruptions
+- I think the executePhase rework is officially done now
+
+-------------------- COMMIT --------------------
 
 - TODO:
-	↳ Rework executePhase function so missed actions are shown
 	↳ Add player-visible console to track/explain all actions
 	↳ Handle disconnections
+	↳ Game ends when a player runs out of pieces
+	↳ Add a ton of comments in my code
+	↳ Write the README
+
+- Potential ideas:
+	↳ Add draw state: 7 turns without any piece losing HP
+	↳ Rework favour
+		↳ Hitting an enemy gives you favour equal to damage dealt
+		↳ Reduce favour given upon kill to 2
+		↳ Convert gives favour equal to target's remaining health + kill favour
+	↳ Change starting position
+		↳ Move back soldier and back monk up one space to bring them in line with forward soldiers
