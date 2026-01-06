@@ -56,12 +56,22 @@ Gonna say this: I ain't going back and trying to remember what the shit I did be
 
 -------------------- COMMIT --------------------
 
+- Changed starting position
+- Reduced favour on kill 3 -> 2
+- Players now gain favour on damage dealt
+
+-------------------- COMMIT --------------------
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 - TODO:
 	↳ Add player-visible console to track/explain all actions
 	↳ Handle disconnections
 	↳ Game ends when a player runs out of pieces
 	↳ Add a ton of comments in my code
 	↳ Write the README
+	↳ Fix rest animation
 
 - Potential ideas:
 	↳ Add draw state: 7 turns without any piece losing HP

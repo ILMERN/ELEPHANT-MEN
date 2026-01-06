@@ -329,6 +329,8 @@ const actionObjects = [
             actionList.forEach(action => {
                 const [targetPiece, tRow, tCol] = targetBoard.getPieceAndCoords(action.target);
                 if (targetPiece) {
+                    const favourToAdd = Math.min(Math.max(targetPiece.currentHealth, 0), 1);
+                    addFavour(oppositeTeam(targetPiece.team), favourToAdd, targetBoard);
                     targetPiece.damage(1);
                 } else {
                     const actingPiece = targetBoard.getPiece(action.location);
@@ -514,9 +516,11 @@ const actionObjects = [
                     const actingPiece = targetBoard.getPiece(action.location);
 
                     if (targetPiece) {
-                        if (targetPiece.team !== actingPiece.team) {
-                            targetPiece.team = actingPiece.team;
-                            addFavour(actingPiece.team, 3, targetBoard);
+                        if (targetPiece.team !== action.team && !targetPiece.isDead) {
+                            //const favourToAdd = targetPiece.currentHealth + 2;
+                            //addFavour(oppositeTeam(targetPiece.team), favourToAdd, targetBoard);
+                            addFavour(oppositeTeam(targetPiece.team), 3, targetBoard);
+                            targetPiece.team = action.team;
                         }
                     }
                     targetedSpaces.add(action.target);
@@ -533,6 +537,8 @@ const actionObjects = [
                 const actingPiece = targetBoard.getPiece(action.location);
                 const [targetPiece, tRow, tCol] = targetBoard.getPieceAndCoords(action.target);
                 if (targetPiece) {
+                    const favourToAdd = Math.min(Math.max(targetPiece.currentHealth, 0), 2);
+                    addFavour(oppositeTeam(targetPiece.team), favourToAdd, targetBoard);
                     targetPiece.damage(2);
                 }
                 actingPiece.isResting = true;
@@ -887,7 +893,7 @@ function clearDeadPieces(targetBoard) {
     targetBoard.board.forEach((row, x) => {
         row.forEach((piece, y) => {
             if (piece?.isDead) {
-                addFavour(oppositeTeam(piece.team), 3, targetBoard);
+                addFavour(oppositeTeam(piece.team), 2, targetBoard);
                 targetBoard.board[x][y] = null;
             }
         });
@@ -973,19 +979,19 @@ function newGame() {
     baseBoard.clearBoard();
 
     // Then we add all the pieces in their starting positions
+    baseBoard.board[1][1] = new Piece("golem", "p");
     baseBoard.board[2][2] = new Piece("soldier", "p");
-    baseBoard.board[1][2] = new Piece("golem", "p");
-    baseBoard.board[1][3] = new Piece("monk", "p");
-    baseBoard.board[1][4] = new Piece("soldier", "p");
-    baseBoard.board[1][5] = new Piece("golem", "p");
+    baseBoard.board[2][3] = new Piece("monk", "p");
+    baseBoard.board[2][4] = new Piece("soldier", "p");
     baseBoard.board[2][5] = new Piece("soldier", "p");
+    baseBoard.board[1][6] = new Piece("golem", "p");
 
+    baseBoard.board[6][1] = new Piece("golem", "g");
     baseBoard.board[5][2] = new Piece("soldier", "g");
-    baseBoard.board[6][2] = new Piece("golem", "g");
-    baseBoard.board[6][3] = new Piece("soldier", "g");
-    baseBoard.board[6][4] = new Piece("monk", "g");
-    baseBoard.board[6][5] = new Piece("golem", "g");
+    baseBoard.board[5][3] = new Piece("soldier", "g");
+    baseBoard.board[5][4] = new Piece("monk", "g");
     baseBoard.board[5][5] = new Piece("soldier", "g");
+    baseBoard.board[6][6] = new Piece("golem", "g");
 
     // Disable game over window
     gameOverWindow.style.display = "none";
