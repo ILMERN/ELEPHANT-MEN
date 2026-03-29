@@ -1,4 +1,7 @@
-// TODO: add victory screen and new game
+// Colours:
+// #363d40 - Dark background
+// #575b69 - Light background
+// #d0d0be - Foreground
 
 // Assign the player's team, green by default (as opposed to purple)
 let playerTeam = "g";
@@ -25,6 +28,35 @@ const victoryMessage = document.querySelector('.victory-message');
 const rematchNotification = document.querySelector('.rematch-notification');
 const rematchButton = document.querySelector('.rematch-button');
 const newOpponentButton = document.querySelector('.new-opponent-button');
+
+// Initialize player console within an object for handling
+const playerConsole = {
+    output: document.querySelector('.player-console'),
+
+    send(message, wrapper) {
+        let BGColour = "#363d40";
+        let messageString = message.toString();
+
+        if (wrapper !== undefined) {
+            if (wrapper === "span") {
+                BGColour = "#575b69";
+            } else {
+                messageString = `<${wrapper}>${messageString}</${wrapper}>`
+            }
+        }
+
+        const messageElement = document.createElement("div");
+        messageElement.style.backgroundColor = BGColour;
+        messageElement.innerHTML = messageString;
+        this.output.appendChild(messageElement);
+
+        /*        this.output.innerHTML += `<div style="background-color: ${BGColour};">${message.toString()}</div>`;*/
+    },
+
+    clear() {
+        this.output.innerHTML = "";
+    }
+}
 
 // Time in ms between actions (hehe ebil number)
 let animDelay = 666;
@@ -140,7 +172,10 @@ class BoardState {
     }
 
     getPiece(position) {
-        if (position.length != 2) {
+        if (typeof (position) !== "string") {
+            return null;
+        }
+        if (position.length !== 2) {
             return null;
         }
 
@@ -215,7 +250,7 @@ const actionObjects = [
         type: "move",
         notation: ">",
         range: 1,
-        exe(actionList, targetBoard, targetedSpaces) {
+        exe(actionList, targetBoard, targetedSpaces, messageList) {
             // Create a set of successful move actions and failed move actions
             const pass = new Set();
             const fail = new Set();
@@ -228,8 +263,13 @@ const actionObjects = [
 
                 actionList.forEach(otherAction => {
                     if (action !== otherAction && action.target === otherAction.target) {
+                        actingPiece = targetBoard.getPiece(action.location);
+                        otherActingPiece = targetBoard.getPiece(otherAction.location);
+
                         fail.add(action);
+                        messageList.push(actionFail(action, `collision`));
                         fail.add(otherAction);
+                        messageList.push(actionFail(action, `collision`));
                         return;
                     }
                 });
@@ -256,6 +296,7 @@ const actionObjects = [
 
                 if (targetPiece.currentAction !== "move") {
                     fail.add(action);
+                    messageList.push(actionFail(action, `space is occupied`));
                     return false;
                 }
 
@@ -263,6 +304,7 @@ const actionObjects = [
 
                 if (otherAction.target === action.location && root !== action && root !== otherAction) {
                     fail.add(action);
+                    messageList.push(actionFail(action, `space is occupied`));
                     return false;
                 }
 
@@ -274,13 +316,14 @@ const actionObjects = [
 
             function executeMove(action, holder) {
                 if (!done.has(action)) {
-                    const [lRow, lCol] = positionFromString(action.location);
-                    const [tRow, tCol] = positionFromString(action.target);
+                    const [actingPiece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
+                    const [targetPiece, tRow, tCol] = targetBoard.getPieceAndCoords(action.target);
                     const otherAction = actionList.find(act => act.location === action.target);
 
                     if (holder) {
                         [targetBoard.board[tRow][tCol], holder] = [holder, targetBoard.board[tRow][tCol]];
                         done.add(action);
+                        messageList.push(`${action.location} ${actingPiece.type} moves to ${action.target}`);
                         targetedSpaces.add(action.target);
                         if (holder) {
                             executeMove(otherAction, holder);
@@ -290,6 +333,7 @@ const actionObjects = [
                         [targetBoard.board[tRow][tCol], holder] = [holder, targetBoard.board[tRow][tCol]];
                         targetedSpaces.add(action.target);
                         done.add(action);
+                        messageList.push(`${action.location} ${actingPiece.type} moves to ${action.target}`);
                         if (holder) {
                             executeMove(otherAction, holder);
                         }
@@ -298,7 +342,9 @@ const actionObjects = [
                         targetedSpaces.add(action.target);
                         targetedSpaces.add(action.location);
                         done.add(action);
+                        messageList.push(`${action.location} ${actingPiece.type} moves to ${action.target}`);
                         done.add(otherAction);
+                        messageList.push(`${action.location} ${actingPiece.type} moves to ${action.target}`);
                     }
                 }
             }
@@ -308,43 +354,58 @@ const actionObjects = [
                     executeMove(action, null);
                 }
             });
+            return messageList;
         }
     },
     {
         type: "block",
         notation: ";",
         range: 0,
-        exe(actionList, targetBoard, targetedSpaces) {
+        exe(actionList, targetBoard, targetedSpaces, messageList) {
             actionList.forEach(action => {
-                const [lRow, lCol] = positionFromString(action.location);
-                targetBoard.board[lRow][lCol].isBlocking = true;
+                const [actingPiece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
+                actingPiece.isBlocking = true;
+                messageList.push(`${action.location} ${actingPiece.type} prepares to block`);
             });
+            return messageList;
         }
     },
     {
         type: "poke",
         notation: ".",
         range: 2,
-        exe(actionList, targetBoard, targetedSpaces) {
+        exe(actionList, targetBoard, targetedSpaces, messageList) {
             actionList.forEach(action => {
+                const actingPiece = targetBoard.getPiece(action.location);
                 const [targetPiece, tRow, tCol] = targetBoard.getPieceAndCoords(action.target);
                 if (targetPiece) {
-                    const favourToAdd = Math.min(Math.max(targetPiece.currentHealth, 0), 1);
-                    addFavour(oppositeTeam(targetPiece.team), favourToAdd, targetBoard);
+                    if (targetPiece.isBlocking) {
+                        messageList.push(`${action.location} ${actingPiece.type}'s poke is blocked by ${action.target} ${targetPiece.type}`);
+                        messageList.push(`${action.location} ${actingPiece.type} must rest`);
+                        actingPiece.isResting = true;
+                    } else {
+                        const favourToAdd = Math.min(Math.max(targetPiece.currentHealth, 0), 1);
+                        addFavour(oppositeTeam(targetPiece.team), favourToAdd, targetBoard);
+
+                        messageList.push(`${action.location} ${actingPiece.type}'s poke hits ${action.target} ${targetPiece.type}`);
+                        messageList.push(`${favourToAdd} damage dealt, ${teamFullName(oppositeTeam(targetPiece.team))} gains ${favourToAdd} favour`);
+                    }
                     targetPiece.damage(1);
                 } else {
-                    const actingPiece = targetBoard.getPiece(action.location);
+                    messageList.push(`${action.location} ${actingPiece.type}'s poke misses on ${action.target}`);
+                    messageList.push(`${action.location} ${actingPiece.type} must rest`);
                     actingPiece.isResting = true;
                 }
                 targetedSpaces.add(action.target);
             });
+            return messageList;
         }
     },
     {
         type: "shove",
         notation: ">",
         range: 1,
-        exe(actionList, targetBoard, targetedSpaces) {
+        exe(actionList, targetBoard, targetedSpaces, messageList) {
             // Create a set of successful shove actions and failed shove actions
             const pass = new Set();
             const fail = new Set();
@@ -367,6 +428,30 @@ const actionObjects = [
                         fail.add(subAction);
                     })
                     fail.add(action);
+                    messageList.push(actionFail(action, `collision`));
+                }
+            }
+
+
+            function successfulShoveMessage(action) {
+                if (!action?.root) {
+                    const actingPiece = targetBoard.getPiece(action.location);
+                    if (action?.children) {
+                        // let msg = `${action.location} ${actingPiece.type} shoves `;
+                        // for (let i = 0; i < action.children.length; i++) {
+                        // if (i - action.children.length === 2) {
+                        // msg += `${targetBoard.getPiece(action.children[i].location.type)} to ${action.children[i].target} and `;
+                        // } else if (i - action.children.length === 1) {
+                        // msg += `${targetBoard.getPiece(action.children[i].location.type)} to ${action.children[i].target}`;
+                        // } else {
+                        // msg += `${targetBoard.getPiece(action.children[i].location.type)}, `;
+                        // }
+                        // }
+
+                        messageList.push(`${action.location} ${actingPiece.type} shoves ${action.children.length} units from ${action.target} to ${action.children.slice(-1)[0].target}`);
+                    } else {
+                        messageList.push(`${action.location} ${actingPiece.type} shoves uninterrupted to ${action.target}`);
+                    }
                 }
             }
 
@@ -440,6 +525,7 @@ const actionObjects = [
 
                 if (otherAction.target === action.location && root !== action && root !== otherAction) {
                     fail.add(action);
+                    messageList.push(actionFail(action, `collision`));
                     return false;
                 }
 
@@ -456,6 +542,7 @@ const actionObjects = [
                     const otherAction = allShoves.find(act => act.location === action.target);
 
                     if (holder) {
+                        successfulShoveMessage(action);
                         [targetBoard.board[tRow][tCol], holder] = [holder, targetBoard.board[tRow][tCol]];
                         done.add(action);
                         targetedSpaces.add(action.target);
@@ -463,6 +550,7 @@ const actionObjects = [
                             executeMove(otherAction, holder);
                         }
                     } else if (otherAction === undefined || otherAction.target !== action.location) {
+                        successfulShoveMessage(action);
                         [holder, targetBoard.board[lRow][lCol]] = [targetBoard.board[lRow][lCol], holder];
                         [targetBoard.board[tRow][tCol], holder] = [holder, targetBoard.board[tRow][tCol]];
                         targetedSpaces.add(action.target);
@@ -471,6 +559,8 @@ const actionObjects = [
                             executeMove(otherAction, holder);
                         }
                     } else {
+                        successfulShoveMessage(action);
+                        successfulShoveMessage(otherAction);
                         [targetBoard.board[lRow][lCol], targetBoard.board[tRow][tCol]] = [targetBoard.board[tRow][tCol], targetBoard.board[lRow][lCol]];
                         targetedSpaces.add(action.target);
                         targetedSpaces.add(action.location);
@@ -491,24 +581,26 @@ const actionObjects = [
         type: "convert",
         notation: ".",
         range: 2,
-        exe(actionList, targetBoard, targetedSpaces) {
+        exe(actionList, targetBoard, targetedSpaces, messageList) {
             // Create a set of successful move actions and failed convert actions
             const fail = new Set();
 
-            // Fail all colliding convert actions
-            actionList.forEach(action => {
-                if (fail.has(action)) {
-                    return;
-                }
+            //// Fail all colliding convert actions
+            //actionList.forEach(action => {
+            //    if (fail.has(action)) {
+            //        return;
+            //    }
 
-                actionList.forEach(otherAction => {
-                    if (action !== otherAction && action.target === otherAction.target) {
-                        fail.add(action);
-                        fail.add(otherAction);
-                        return;
-                    }
-                });
-            });
+            //    actionList.forEach(otherAction => {
+            //        if (action !== otherAction && action.target === otherAction.location && action.location === otherAction.target) {
+            //            fail.add(action);
+            //            messageList.push(actionFail(action, `collision`));
+            //            fail.add(otherAction);
+            //            messageList.push(actionFail(otherAction, `collision`));
+            //            return;
+            //        }
+            //    });
+            //});
 
             actionList.forEach(action => {
                 if (!fail.has(action)) {
@@ -519,9 +611,16 @@ const actionObjects = [
                         if (targetPiece.team !== action.team && !targetPiece.isDead) {
                             //const favourToAdd = targetPiece.currentHealth + 2;
                             //addFavour(oppositeTeam(targetPiece.team), favourToAdd, targetBoard);
+                            messageList.push(`${action.location} ${actingPiece.type} converts ${action.target} ${targetPiece.type} to ${teamFullName(action.team)}`);
                             addFavour(oppositeTeam(targetPiece.team), 3, targetBoard);
                             targetPiece.team = action.team;
                         }
+                        else {
+                            messageList.push(`${action.location} ${actingPiece.type} attempts to convert allied piece ${action.target} ${targetPiece.type}`);
+                        }
+                    }
+                    else {
+                        messageList.push(`${action.location} ${actingPiece.type} attempts to convert empty space ${action.target}`);
                     }
                     targetedSpaces.add(action.target);
                 }
@@ -532,14 +631,32 @@ const actionObjects = [
         type: "cleave",
         notation: "x",
         range: 1,
-        exe(actionList, targetBoard, targetedSpaces) {
+        exe(actionList, targetBoard, targetedSpaces, messageList) {
             actionList.forEach(action => {
                 const actingPiece = targetBoard.getPiece(action.location);
                 const [targetPiece, tRow, tCol] = targetBoard.getPieceAndCoords(action.target);
                 if (targetPiece) {
-                    const favourToAdd = Math.min(Math.max(targetPiece.currentHealth, 0), 2);
-                    addFavour(oppositeTeam(targetPiece.team), favourToAdd, targetBoard);
+
+                    if (targetPiece.isBlocking) {
+                        const favourToAdd = Math.min(Math.max(targetPiece.currentHealth, 0), 1);
+                        addFavour(oppositeTeam(targetPiece.team), favourToAdd, targetBoard);
+
+                        messageList.push(`${action.location} ${actingPiece.type}'s cleave hits blocking ${action.target} ${targetPiece.type}`);
+                        messageList.push(`${action.location} ${actingPiece.type} must rest`);
+                        messageList.push(`${favourToAdd} damage dealt, ${teamFullName(oppositeTeam(targetPiece.team))} gains ${favourToAdd} favour`);
+                    } else {
+                        const favourToAdd = Math.min(Math.max(targetPiece.currentHealth, 0), 2);
+                        addFavour(oppositeTeam(targetPiece.team), favourToAdd, targetBoard);
+
+                        messageList.push(`${action.location} ${actingPiece.type}'s cleave hits ${action.target} ${targetPiece.type}`);
+                        messageList.push(`${action.location} ${actingPiece.type} must rest`);
+                        messageList.push(`${favourToAdd} damage dealt, ${teamFullName(oppositeTeam(targetPiece.team))} gains ${favourToAdd} favour`);
+                    }
                     targetPiece.damage(2);
+                }
+                else {
+                    messageList.push(`${action.location} ${actingPiece.type}'s cleave misses on ${action.target}`);
+                    messageList.push(`${action.location} ${actingPiece.type} must rest`);
                 }
                 actingPiece.isResting = true;
                 targetedSpaces.add(action.target);
@@ -551,11 +668,13 @@ const actionObjects = [
         type: "pray",
         notation: ";",
         range: 0,
-        exe(actionList, targetBoard, targetedSpaces) {
+        exe(actionList, targetBoard, targetedSpaces, messageList) {
             actionList.forEach(action => {
                 const actingPiece = targetBoard.getPiece(action.location);
                 addFavour(actingPiece.team, 1, targetBoard);
                 actingPiece.isResting = true;
+                messageList.push(`${action.location} ${actingPiece.type} prays and must rest`);
+                messageList.push(`${teamFullName(action.team)} gains 1 favour`);
             });
         }
     }
@@ -732,13 +851,14 @@ async function executePhase(actions, targetBoard, rapid = false) {
 
         // Two sets to ensure each piece only acts, and each action is only performed, once
         const exhaustedPieces = new Set();
+        const restingPieces = new Set();
         const completedActions = new Set();
 
         // Adds currently resting pieces to exhaustedPieces set and de-rests them
         targetBoard.board.forEach(row => {
             row.forEach(piece => {
                 if (piece?.isResting) {
-                    exhaustedPieces.add(piece);
+                    restingPieces.add(piece);
                     piece.isResting = false;
                 }
             });
@@ -778,27 +898,38 @@ async function executePhase(actions, targetBoard, rapid = false) {
 
                 // Was this action interrupted?
                 if (targetedSpaces.has(action.location)) {
+                    action.lastIssue = "action was interrupted";
                     continue;
                 }
 
                 // Is there a piece in the correct location?
                 const [actingPiece, lRow, lCol] = targetBoard.getPieceAndCoords(action.location);
                 if (actingPiece === null) {
-                    continue;
-                }
-
-                // Has this piece already acted?
-                if (exhaustedPieces.has(actingPiece)) {
+                    action.lastIssue = "space is empty";
                     continue;
                 }
 
                 // Was the action performed by the correct team?
                 if (actingPiece.team !== action.team) {
+                    action.lastIssue = "wrong team";
                     continue;
                 }
 
                 // Is the piece able to perform this action?
                 if (!actingPiece.availableActions.has(actionObject)) {
+                    action.lastIssue = `${actingPiece.type} cannot use that action`;
+                    continue;
+                }
+
+                // Has this piece already acted?
+                if (exhaustedPieces.has(actingPiece)) {
+                    action.lastIssue = "piece has already acted this phase";
+                    continue;
+                }
+
+                // Was this piece resting?
+                if (restingPieces.has(actingPiece)) {
+                    action.lastIssue = "piece is resting";
                     continue;
                 }
 
@@ -814,9 +945,12 @@ async function executePhase(actions, targetBoard, rapid = false) {
             if (actionFound) {
                 // Build the animation if rapid = false
                 if (!rapid) {
-                    boardSnapshots.push({ board: new BoardState(targetBoard), actions: actionsToExecute });
+                    const newSnapshot = { board: new BoardState(targetBoard), actions: actionsToExecute, consoleMessages: [] }
+                    actionObject.exe?.(actionsToExecute, targetBoard, targetedSpaces, newSnapshot.consoleMessages);
+                    boardSnapshots.push(newSnapshot);
+                } else {
+                    actionObject.exe?.(actionsToExecute, targetBoard, targetedSpaces, []);
                 }
-                actionObject.exe?.(actionsToExecute, targetBoard, targetedSpaces);
                 arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
                 clearDeadPieces(targetBoard);
             }
@@ -828,6 +962,11 @@ async function executePhase(actions, targetBoard, rapid = false) {
                 setTimeout(() => {
                     renderBoard(snapshot.board);
                     drawActionsInArray(snapshot.actions);
+                    if (snapshot.consoleMessages !== undefined) {
+                        snapshot.consoleMessages.forEach(message => {
+                            playerConsole.send(message);
+                        });
+                    }
                 }, currentDelay);
                 currentDelay += animDelay;
             });
@@ -841,7 +980,11 @@ async function executePhase(actions, targetBoard, rapid = false) {
                 }
             });
             if (incompleteActions.length !== 0) {
+
                 setTimeout(() => {
+                    incompleteActions.forEach(action => {
+                        playerConsole.sendActionFail(action, action.lastIssue);
+                    })
                     renderBoard(targetBoard);
                     arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
                 }, currentDelay);
@@ -939,11 +1082,19 @@ function enableBoard() {
 }
 
 // Execute a full set of phases of actions
+let turnCount = 0;
+
 async function executeActions(actions, targetBoard) {
     arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
     const phases = sortActionsByPhase(actions);
 
-    for (const phase of phases) {
+    playerConsole.send(`~~ TURN ${turnCount + 1} ~~`, "h3");
+
+    for (let i = 0; i < phases.length; i++) {
+        const phase = phases[i]
+
+        playerConsole.send(`PHASE ${i + 1}`, "span");
+
         await executePhase(phase, targetBoard);
         if (Math.abs(targetBoard.favour) >= 7) {
             const winningTeam = (() => {
@@ -957,6 +1108,7 @@ async function executeActions(actions, targetBoard) {
             break;
         }
     }
+    turnCount += 1;
     enableBoard();
 }
 
@@ -977,6 +1129,9 @@ function newGame() {
 
     // Remove all remaining pieces
     baseBoard.clearBoard();
+
+    // Reset turn count
+    turnCount = 0;
 
     // Then we add all the pieces in their starting positions
     baseBoard.board[1][1] = new Piece("golem", "p");
@@ -1035,6 +1190,19 @@ function oppositeTeam(team) {
         case "p": return "g";
         default: return null;
     }
+}
+
+function teamFullName(team) {
+    switch (team) {
+        case "g": return "green";
+        case "p": return "purple";
+        default: return "neutral";
+    }
+    return fullName;
+}
+
+function actionFail(action, reason) {
+    return `${teamFullName(action.team)}'s action "${action.location}${action.notation}${action.target}" failed - ${reason}`;
 }
 
 // Function to draw images onto the arrow canvas

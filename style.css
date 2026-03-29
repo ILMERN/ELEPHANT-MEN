@@ -137,3 +137,15 @@ body {
     outline-width: 3px;
     padding: 4px 4px 4px 4px;
 }
+
+.player-console {
+    width: 20rem;
+    height: 80vmin;
+    outline: solid;
+    outline-width: 3px;
+    padding: 4px 4px 4px 4px;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}

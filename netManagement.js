@@ -188,7 +188,7 @@ sendButton.addEventListener('click', function () {
         iSent = true;
 
         if (theySent) {
-            executeActions([...myActions, ...theirActions], baseBoard);
+            executeActions([...theirActions, ...myActions], baseBoard);
             resetInputActions();
         }
     }

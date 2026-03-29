@@ -62,22 +62,48 @@ Gonna say this: I ain't going back and trying to remember what the shit I did be
 
 -------------------- COMMIT --------------------
 
+07/01/2026
+- Begun implementing player console (no functionality yet)
+
+08/01/2026
+- Console is now functional, with playerConsole.clear() and playerConsole.send(message) functions
+	↳ No messages are sent to the console yet
+
+12/01/2026
+- Added some console functionality
+	↳ General failed actions (so nothing specific)
+	↳ Successful MOVE actions
+	↳ Some failed MOVE actions
+
+13/01/2026
+- More console functionality
+	↳ This shit is hell, progress is slow
+
+25/01/2026
+- Just a little more console functionality (so basically jack shit)
+- Poke now rests if blocked
+
+30/01/2026
+- Console finished for Shove action (hopefully)
+- That should be the worst of the console functionality
+
+29/03/2026
+- Console functionality finished (it really wasn't that hard)
+- Removed [Convert] clashing (it wasn't working anyway)
+
+-------------------- COMMIT --------------------
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - TODO:
 	↳ Add player-visible console to track/explain all actions
-	↳ Handle disconnections
 	↳ Game ends when a player runs out of pieces
-	↳ Add a ton of comments in my code
-	↳ Write the README
+	↳ Update rules
+	↳ Handle disconnections
 	↳ Fix rest animation
+	↳ Finish/implement music
+	↳ Write the README
+	↳ Add a ton of comments in my code
 
 - Potential ideas:
 	↳ Add draw state: 7 turns without any piece losing HP
-	↳ Rework favour
-		↳ Hitting an enemy gives you favour equal to damage dealt
-		↳ Reduce favour given upon kill to 2
-		↳ Convert gives favour equal to target's remaining health + kill favour
-	↳ Change starting position
-		↳ Move back soldier and back monk up one space to bring them in line with forward soldiers
