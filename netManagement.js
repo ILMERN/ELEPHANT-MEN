@@ -122,6 +122,8 @@ rematchButton.addEventListener('click', function () {
         if (theyRematch) {
             newGame();
             resetInputActions();
+            iRematch = false;
+            theyRematch = false;
         } else {
             rematchNotification.innerHTML = "Rematch request sent!";
         }
@@ -144,6 +146,8 @@ function handleData(data) {
         if (iRematch) {
             newGame();
             resetInputActions();
+            iRematch = false;
+            theyRematch = false;
         } else {
             rematchNotification.innerHTML = "Opponent wants a rematch!";
         }

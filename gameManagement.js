@@ -1110,6 +1110,7 @@ async function executeActions(actions, targetBoard) {
     }
     turnCount += 1;
     enableBoard();
+    currentBoard = baseBoard;
 }
 
 // Start a new game, setting pieces up in the starting position
@@ -1133,6 +1134,9 @@ function newGame() {
     // Reset turn count
     turnCount = 0;
 
+    // Clear player console
+    playerConsole.clear();
+
     // Then we add all the pieces in their starting positions
     baseBoard.board[1][1] = new Piece("golem", "p");
     baseBoard.board[2][2] = new Piece("soldier", "p");
@@ -1154,6 +1158,7 @@ function newGame() {
     // Enable and render the board
     enableBoard();
     renderBoard(baseBoard);
+    currentBoard = baseBoard;
 }
 
 // Function that gets called when one player wins
@@ -1328,6 +1333,26 @@ boardButtons.forEach(button => {
     button.addEventListener('click', function () {
         if (selectedNotation === "") {
             if (!attemptDelete(this.name)) {
+                invalidActionGreyout = "#BBBBBB"
+                actingPiece = currentBoard.getPiece(this.name);
+                actionSelectors.forEach(actionSelector => {
+                    if (actingPiece !== null) {
+                        let foundMatchingAction = false;
+                        actingPiece.availableActions.forEach(actionObject => {
+                            if (actionObject.notation === actionSelector.name) {
+                                foundMatchingAction = true;
+                            }
+                        })
+                        if (foundMatchingAction) {
+                            actionSelector.style.background = "#FFFFFF";
+                        } else {
+                            actionSelector.style.background = invalidActionGreyout;
+                        }
+                    }
+                    else {
+                        actionSelector.style.background = invalidActionGreyout;
+                    }
+                })
                 actionMenu.style.display = "block";
                 actionMenu.style.left = `${mouseX - 8}px`;
                 actionMenu.style.top = `${mouseY - 8}px`;
@@ -1368,8 +1393,11 @@ async function simulateToPhase(phase) {
             await executePhase(currentActions[i], simBoard, true);
             renderBoard(simBoard);
         }
+
+        currentBoard = simBoard;
     } else {
         renderBoard(baseBoard);
+        currentBoard = baseBoard;
     }
     drawAllActions(phase);
 }
