@@ -100,6 +100,17 @@ Gonna say this: I ain't going back and trying to remember what the shit I did be
 
 -------------------- COMMIT --------------------
 
+05/04/2026
+- Updated README.md to include descriptions pieces and actions
+- Deleted quick_rules.txt (to be replaced by README.md)
+- Fixed bug where invalid function was called on failed actions
+- Readded Convert clashing (duh that's important and it was also working as intended what was I thinking)
+- Updated Action Selection Menu
+	↳ Invalid actions are red instead of grey
+	↳ Resting units are treated as having no valid actions
+	↳ Enemy units are treated as having no valid actions
+
+-------------------- COMMIT --------------------
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

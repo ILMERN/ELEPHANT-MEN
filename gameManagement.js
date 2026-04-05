@@ -585,22 +585,22 @@ const actionObjects = [
             // Create a set of successful move actions and failed convert actions
             const fail = new Set();
 
-            //// Fail all colliding convert actions
-            //actionList.forEach(action => {
-            //    if (fail.has(action)) {
-            //        return;
-            //    }
+            // Fail all colliding convert actions
+            actionList.forEach(action => {
+                if (fail.has(action)) {
+                    return;
+                }
 
-            //    actionList.forEach(otherAction => {
-            //        if (action !== otherAction && action.target === otherAction.location && action.location === otherAction.target) {
-            //            fail.add(action);
-            //            messageList.push(actionFail(action, `collision`));
-            //            fail.add(otherAction);
-            //            messageList.push(actionFail(otherAction, `collision`));
-            //            return;
-            //        }
-            //    });
-            //});
+                actionList.forEach(otherAction => {
+                    if (action !== otherAction && action.target === otherAction.target) {
+                        fail.add(action);
+                        messageList.push(actionFail(action, `blocked`));
+                        fail.add(otherAction);
+                        messageList.push(actionFail(otherAction, `blocked`));
+                        return;
+                    }
+                });
+            });
 
             actionList.forEach(action => {
                 if (!fail.has(action)) {
@@ -983,7 +983,7 @@ async function executePhase(actions, targetBoard, rapid = false) {
 
                 setTimeout(() => {
                     incompleteActions.forEach(action => {
-                        playerConsole.sendActionFail(action, action.lastIssue);
+                        playerConsole.send(actionFail(action, action.lastIssue));
                     })
                     renderBoard(targetBoard);
                     arrowCanvasContext.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
@@ -1333,10 +1333,11 @@ boardButtons.forEach(button => {
     button.addEventListener('click', function () {
         if (selectedNotation === "") {
             if (!attemptDelete(this.name)) {
-                invalidActionGreyout = "#BBBBBB"
+                invalidActionBackground = "#DDAAAA"
+                validActionBackground = "#FFFFFF"
                 actingPiece = currentBoard.getPiece(this.name);
                 actionSelectors.forEach(actionSelector => {
-                    if (actingPiece !== null) {
+                    if (actingPiece !== null && !actingPiece?.isResting && actingPiece?.team === playerTeam) {
                         let foundMatchingAction = false;
                         actingPiece.availableActions.forEach(actionObject => {
                             if (actionObject.notation === actionSelector.name) {
@@ -1344,13 +1345,13 @@ boardButtons.forEach(button => {
                             }
                         })
                         if (foundMatchingAction) {
-                            actionSelector.style.background = "#FFFFFF";
+                            actionSelector.style.background = validActionBackground;
                         } else {
-                            actionSelector.style.background = invalidActionGreyout;
+                            actionSelector.style.background = invalidActionBackground;
                         }
                     }
                     else {
-                        actionSelector.style.background = invalidActionGreyout;
+                        actionSelector.style.background = invalidActionBackground;
                     }
                 })
                 actionMenu.style.display = "block";
