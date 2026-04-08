@@ -1106,6 +1106,28 @@ async function executeActions(actions, targetBoard) {
             })();
             gameOver(winningTeam, "favour victory");
             break;
+        } else {
+            greenSurvivor = false;
+            purpleSurvivor = false;
+            targetBoard.board.forEach(row => {
+                row.forEach(piece => {
+                    if (piece?.team === "g") {
+                        greenSurvivor = true;
+                    } else if (piece?.team === "p") {
+                        purpleSurvivor = true;
+                    }
+                });
+            });
+            if (!greenSurvivor || !purpleSurvivor) {
+                if (!greenSurvivor && !purpleSurvivor) {
+                    gameOver("", "mutual destruction");
+                } else if (!greenSurvivor) {
+                    gameOver("p", "annihilation victory");
+                } else {
+                    gameOver("g", "annihilation victory");
+                }
+                break;
+            }
         }
     }
     turnCount += 1;
@@ -1168,9 +1190,12 @@ function gameOver(winningTeam, cause = "") {
 
     let message = "";
     switch (winningTeam) {
-        case "g": message = "Green wins"; break;
-        case "p": message = "Purple wins"; break;
+        case "g": message = "Green Wins"; break;
+        case "p": message = "Purple Wins"; break;
+        default: message = "Nobody Wins"; break;
     }
+
+    playerConsole.send(`~~ ${message} ~~`, "h3");
 
     if (cause !== "") {
         message += ` - ${cause}`;

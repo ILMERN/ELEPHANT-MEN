@@ -112,13 +112,27 @@ Gonna say this: I ain't going back and trying to remember what the shit I did be
 
 -------------------- COMMIT --------------------
 
+06/04/2026
+- Game now ends when one/both players run out of pieces
+
+07/04/2026
+- Started working on disconnection netcode (basically jack shit atm)
+
+08/04/2026
+- Game now ends some time after disconnection
+- Reconnection code exists but straight doesn't work. Gonna push it live anyway
+
+-------------------- COMMIT --------------------
+
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - TODO:
-	↳ Game ends when a player runs out of pieces
-	↳ Update rules
 	↳ Handle disconnections
+		↳ Attempt to reconnect to opponent
+		↳ If that fails, end the game
 	↳ Fix rest animation
+	↳ Create/implement sfx
 	↳ Finish/implement music
 	↳ Write the README
 

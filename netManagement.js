@@ -15,7 +15,13 @@ hostCode.innerHTML = Array(codeLength).fill("-").join('');
 const joinCode = document.querySelector('.join-code');
 
 // How long the joiner should wait before timing out
-const timeoutLimit = 10000;
+const timeoutLimit = 2000;
+
+// How long before sending another ping
+const pingTimer = 5000;
+
+// On unexpected disconnect, how many times should we attempt to reconnect
+const reconnectAttempts = 10;
 
 // Create connection handling variables
 let connectMode = 'none';
@@ -28,11 +34,12 @@ let theirActions = [];
 let theySent = false;
 let iRematch = false;
 let theyRematch = false;
+let pingCleared = true;
 
 // Create systems for generating peer IDs
 const gameCode = 'ELMEN_';
 function generateID() {
-    const chars = 'ABCDEFGHJKLMNPRSTWXYZ23456789';
+    const chars = 'ABCDEFGHJKLMNPRTWXY346789';
     return Array.from({ length: codeLength }, () =>
         chars[Math.floor(Math.random() * chars.length)]
     ).join('');
@@ -68,9 +75,10 @@ hostButton.addEventListener('click', function () {
                 netcodeUI.style.display = 'none';
                 newGame();
                 otherPeer = conn;
-                otherPeer.on('data', function (data) {
-                    handleData(data);
-                });
+                setTimeout(startPinging, pingTimer);
+                peer.removeAllListeners('open');
+                peer.removeAllListeners('connection');
+                otherPeer.on('data', handleData);
             }
         });
     }
@@ -95,15 +103,15 @@ joinButton.addEventListener('click', function () {
         }, timeoutLimit);
 
         peer.on('open', function (id) {
-            peerID = id;
-            otherPeer = peer.connect(gameCode + joinCode.value.toUpperCase());
-            otherPeer.on('data', function (data) {
-                handleData(data);
-            })
+            peerID = gameCode + joinCode.value.toUpperCase();
+            otherPeer = peer.connect(peerID);
             otherPeer.on('open', function () {
                 connected = true;
                 netcodeUI.style.display = 'none';
                 newGame();
+                setTimeout(startPinging, pingTimer);
+                peer.removeAllListeners('open');
+                otherPeer.on('data', handleData);
             })
         })
     }
@@ -117,7 +125,7 @@ cancelHostButton.addEventListener('click', function () {
 
 rematchButton.addEventListener('click', function () {
     if (!iRematch) {
-        otherPeer.send("rematch");
+        otherPeer.send({ type: "rematch", contents: null });
         iRematch = true;
         if (theyRematch) {
             newGame();
@@ -141,23 +149,35 @@ newOpponentButton.addEventListener('click', function () {
 });
 
 function handleData(data) {
-    if (data === "rematch") {
-        theyRematch = true;
-        if (iRematch) {
-            newGame();
-            resetInputActions();
-            iRematch = false;
-            theyRematch = false;
-        } else {
-            rematchNotification.innerHTML = "Opponent wants a rematch!";
+    if (data.type === "rematch") {
+        if (!theySent) {
+            theyRematch = true;
+            if (iRematch) {
+                newGame();
+                resetInputActions();
+                iRematch = false;
+                theyRematch = false;
+            } else {
+                rematchNotification.innerHTML = "Opponent wants a rematch!";
+            }
         }
-    } else if (!theySent) {
-        theirActions = data;
-        theySent = true;
-        if (iSent) {
-            executeActions([...myActions, ...theirActions], baseBoard);
-            resetInputActions();
+    } else if (data.type === "actions") {
+        if (otherPeer !== null) {
+            if (!theySent) {
+                theirActions = data.contents;
+                theySent = true;
+                if (iSent) {
+                    executeActions([...myActions, ...theirActions], baseBoard);
+                    resetInputActions();
+                }
+            }
         }
+    } else if (data.type === "ping") {
+        if (otherPeer !== null) {
+            otherPeer.send({ type: "pong", contents: null });
+        }
+    } else if (data.type === "pong") {
+        pingCleared = true;
     }
 }
 
@@ -188,7 +208,7 @@ sendButton.addEventListener('click', function () {
         currentActions.forEach((set, i) => {
             myActions.push(...set);
         });
-        otherPeer.send(myActions);
+        otherPeer.send({type: "actions", contents: myActions });
         iSent = true;
 
         if (theySent) {
@@ -218,6 +238,52 @@ function resetNetVariables() {
     theySent = false;
     iRematch = false;
     theyRematch = false;
+    pingCleared = true;
 
     hostCode.innerHTML = Array(codeLength).fill("-").join('');
+}
+
+function attemptReconnect(attemptsRemaining) {
+    if (!pingCleared) {
+        if (attemptsRemaining > 0) {
+            otherPeer = null;
+            peer.removeAllListeners('connection');
+            peer.removeAllListeners('open');
+            if (connectMode === "host") {
+                peer.on('connection', function (conn) {
+                    if (otherPeer === null) {
+                        pingCleared = true;
+                        otherPeer = conn;
+                        setTimeout(startPinging, pingTimer);
+                        peer.removeAllListeners('connection');
+                    }
+                });
+            } else if (connectMode === "join") {
+                otherPeer = peer.connect(peerID);
+                otherPeer.on('open', function () {
+                    pingCleared = true;
+                    setTimeout(startPinging, pingTimer);
+                    peer.removeAllListeners('open');
+                });
+            }
+
+            setTimeout(function () {
+                attemptReconnect(attemptsRemaining - 1)
+            }, timeoutLimit);
+        } else {
+            gameOver("", "Disconnection");
+        }
+    }
+}
+
+function startPinging() {
+    if (connectMode !== "none") {
+        if (pingCleared) {
+            otherPeer.send({ type: "ping", contents: null });
+            pingCleared = false;
+            setTimeout(startPinging, pingTimer);
+        } else {
+            attemptReconnect(reconnectAttempts);
+        }
+    }
 }
