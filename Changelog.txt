@@ -124,6 +124,13 @@ Gonna say this: I ain't going back and trying to remember what the shit I did be
 
 -------------------- COMMIT --------------------
 
+10/04/2026
+- Action selection menu only names usable actions. Invalid actions are just the notation
+- Can press enter instead of the "join" button when joining a host
+
+-------------------- COMMIT --------------------
+
+
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

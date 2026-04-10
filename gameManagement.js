@@ -1363,20 +1363,23 @@ boardButtons.forEach(button => {
                 actingPiece = currentBoard.getPiece(this.name);
                 actionSelectors.forEach(actionSelector => {
                     if (actingPiece !== null && !actingPiece?.isResting && actingPiece?.team === playerTeam) {
-                        let foundMatchingAction = false;
+                        let matchingAction = null;
                         actingPiece.availableActions.forEach(actionObject => {
                             if (actionObject.notation === actionSelector.name) {
-                                foundMatchingAction = true;
+                                matchingAction = actionObject;
                             }
                         })
-                        if (foundMatchingAction) {
+                        if (matchingAction) {
                             actionSelector.style.background = validActionBackground;
+                            actionSelector.innerHTML = `${actionSelector.name} ${matchingAction.type.toUpperCase()}`;
                         } else {
                             actionSelector.style.background = invalidActionBackground;
+                            actionSelector.innerHTML = `${actionSelector.name}`;
                         }
                     }
                     else {
                         actionSelector.style.background = invalidActionBackground;
+                        actionSelector.innerHTML = `${actionSelector.name}`;
                     }
                 })
                 actionMenu.style.display = "block";

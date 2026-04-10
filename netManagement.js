@@ -117,6 +117,13 @@ joinButton.addEventListener('click', function () {
     }
 });
 
+joinCode.addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        joinButton.click();
+    }
+});
+
+
 cancelHostButton.addEventListener('click', function () {
     resetNetVariables();
     enableNetUI();
