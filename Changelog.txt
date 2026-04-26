@@ -133,21 +133,32 @@ Gonna say this: I ain't going back and trying to remember what the shit I did be
 16/04/2026
 - Implemented some encryption so cheating is no longer trivial
 
-17/04/2025
+17/04/2026
 - Tried to implement some redundancy to prevent desync but just broke everything instead (a problem for tomorrow's me to solve)
 - Nvm looks like I fixed it
 
 -------------------- COMMIT --------------------
 
+24/04/2026
+- Buffed BLOCK: now lasts until blocking unit performs another action
+- Blocking pieces are now displayed in-game
+- Fixed resting animation
+
+26/04/2026
+- Added link to github (which includes the rules)
+- Breaking a Block with an attempted action now causes the attempted action to fail
+- Updated README.md to include new Block mechanics
+
+-------------------- COMMIT --------------------
+
+
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - TODO:
-	↳ Do one final check before executing actions
-	↳ Make pings also do this check
 	↳ Handle disconnections
 		↳ Attempt to reconnect to opponent
 		↳ If that fails, end the game
-	↳ Fix rest animation
 	↳ Create/implement sfx
 	↳ Finish/implement music
 	↳ Write the README

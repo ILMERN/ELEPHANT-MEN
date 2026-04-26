@@ -222,6 +222,9 @@ function renderBoard(boardToRender = baseBoard) {
             if (piece.isResting) {
                 resting = "_resting";
             }
+            else if (piece.isBlocking) {
+                resting = "_blocking"
+            } 
             spriteName = `sprites/${piece.type}_${piece.team}${resting}.png`;
 
             const currentHealth = piece.currentHealth;
@@ -759,7 +762,6 @@ class Piece {
     resetAction() {
         this.currentAction = null;
         this.currentTarget = null;
-        this.isBlocking = false;
     }
 }
 
@@ -854,12 +856,11 @@ async function executePhase(actions, targetBoard, rapid = false) {
         const restingPieces = new Set();
         const completedActions = new Set();
 
-        // Adds currently resting pieces to exhaustedPieces set and de-rests them
+        // Adds currently resting pieces to restingPieces
         targetBoard.board.forEach(row => {
             row.forEach(piece => {
                 if (piece?.isResting) {
                     restingPieces.add(piece);
-                    piece.isResting = false;
                 }
             });
         });
@@ -930,6 +931,14 @@ async function executePhase(actions, targetBoard, rapid = false) {
                 // Was this piece resting?
                 if (restingPieces.has(actingPiece)) {
                     action.lastIssue = "piece is resting";
+                    continue;
+                }
+
+                // Is the piece currently blocking
+                // IMPORTANT -- keep this at the end of the chain
+                if (actingPiece.isBlocking) {
+                    action.lastIssue = "piece was blocking, exiting block stance";
+                    actingPiece.isBlocking = false;
                     continue;
                 }
 
@@ -1021,6 +1030,9 @@ async function executePhase(actions, targetBoard, rapid = false) {
                 row.forEach((piece, y) => {
                     if (piece !== null) {
                         piece.resetAction();
+                    }
+                    if (restingPieces.has(piece)) {
+                        piece.isResting = false;
                     }
                 });
             });

@@ -17,7 +17,7 @@ These are your standard footsoldiers. They have a long-range attack, a close-ran
 ### Golem,  4HP
 **Count: 2**
 ![Green Golem](sprites/golem_g.png) ![Purple Golem](sprites/golem_p.png)
-Slow but unstoppable. They lack the long-range options of soldiers and monks, but in exchange they have an enormous health pool and a unique "shove" movement.
+Slow and unstoppable. They lack the long-range options of soldiers and monks, but in exchange they're extraordinarly durable and have a unique "shove" movement.
 - Block - Reduces damage taken this phase from attacks by 1.
 - Shove - This unit moves one space orthogonally, pushing all units in its path.
 - Cleave - Deals 2 damage to a unit 1 space away. After the attack, this unit must always rest.
@@ -46,7 +46,7 @@ Resolution order:
 Available to Soldiers and Monks, Move is a standard movement action to an adjacent space. Essential for avoiding enemy actions. If a unit attempts to Move to an occupied space, this action will fail UNLESS the unit on the occupied space is also Moving. Two units may swap positions in this way. If two units attempt to Move to the same space, both will fail. As Move is the first action in the resolution order, it cannot be interrupted. However, as it fails when targetting occupied spaces, it cannot be used to interrupt other actions either.
 
 ### Block
-Unique to the Golem, Block is used primarily as a counter to the Soldier's Poke, as Golems lack the fast movement required to evade it. If the Golem that uses Block is attacked this phase, the damage dealt is reduced by 1, completely negating a Poke and halving the damage of a Cleave. The effects of a Block action do not carry over to future phases. Block does not negate a Monk's Convert.
+Unique to the Golem, Block makes the golem enter a Block stance until it receives an attack or attempts to perform another action. Blocking reduces incoming damage taken by one, nullifying a Poke and halving the damage of a Cleave. Attempting to perform an action with a Blocking Golem will instead cause the action to fail and the Golem to exit the block stance (Note: this happens at the point where the attempted action occurs e.g. cancelling a the Block with another Block action will cause the Golem to stop Blocking before any Poke actions. Cancelling the Block happens before other actions in that phase, so you'll take full damage against a Cleave if you cancel Block with a Cleave of your own). Block does NOT nullify the effects of Convert. Being Shoved does not break the Block stance.
 
 ### Poke
 Unique to the Soldier, Poke is an attack that deals 1 damage to a unit precisely 2 spaces away (so it cannot target adjacent units). If the space Poke targets is unoccupied, or the targeted unit is a Blocking Golem, the Poking Soldier must rest and cannot act next phase. Poke is the fastest action capable of interrupting other actions. If two Soldiers Poke each other, they will both take 1 damage, even if this damage is enough to kill. Successfully dealing damage gives you 1 Favour for each damage dealt (negative for friendly fire), and killing a unit grants an extra 2 Favour (also negative for friendly fire).
