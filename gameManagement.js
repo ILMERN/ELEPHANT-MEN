@@ -3,6 +3,9 @@
 // #575b69 - Light background
 // #d0d0be - Foreground
 
+// How many actions each player is allowed to make per phase
+const maxActions = 1;
+
 // Assign the player's team, green by default (as opposed to purple)
 let playerTeam = "g";
 
@@ -1193,6 +1196,7 @@ function newGame() {
     enableBoard();
     renderBoard(baseBoard);
     currentBoard = baseBoard;
+    changeToPhase(0);
 }
 
 // Function that gets called when one player wins
@@ -1216,6 +1220,10 @@ function gameOver(winningTeam, cause = "") {
     victoryMessage.innerHTML = message;
     rematchButton.disabled = false;
     rematchNotification.innerHTML = "<br />";
+
+    phaseSelectors.forEach(button => {
+        button.style.backgroundColor = "";
+    });
 }
 
 function addFavour(team, amount, board) {
@@ -1400,29 +1408,33 @@ boardButtons.forEach(button => {
                 selectedSpace = this.name;
                 drawAction(selectedSpace);
             }
-        } else if (selectedNotation !== "") {
+        }
+        else {
             spacesInRange.forEach(space => {
                 if (space === this.name) {
                     const newAction = createAction(selectedSpace, selectedNotation, space, playerTeam, currentPhase);
                     currentActions[currentPhase].push(newAction);
+                    if (currentActions[currentPhase].length > maxActions) {
+                        attemptDelete(currentActions[currentPhase][0].location);
+                    }
                 }
             });
-            drawAllActions(currentPhase);
-            selectedSpace = "";
-            selectedNotation = "";
-            spacesInRange = [];
+            if (currentPhase < 2 && currentActions[currentPhase + 1].length < maxActions) {
+                changeToPhase(currentPhase+1);
+            }
+            else {
+                drawAllActions(currentPhase);
+                selectedSpace = "";
+                selectedNotation = "";
+                spacesInRange = [];
+            }
         }
     });
 });
 
 phaseSelectors.forEach(button => {
     button.addEventListener('click', function () {
-        currentPhase = Number(this.name);
-        let selectedSpace = "";
-        let selectedNotation = "";
-        let spacesInRange = [];
-
-        simulateToPhase(currentPhase);
+        changeToPhase(this.name);
     });
 });
 
@@ -1485,4 +1497,21 @@ function deleteAllInputActions() {
     //actionFields.forEach(field => {
     //    field.innerHTML = "";
     //});
+}
+
+function changeToPhase(phase) {
+    currentPhase = parseInt(phase);
+    selectedSpace = "";
+    selectedNotation = "";
+    spacesInRange = [];
+    phaseSelectors.forEach(button => {
+        if (button.name === currentPhase.toString()) {
+            button.style.backgroundColor = "#DDAAAA";
+        }
+        else {
+            button.style.backgroundColor = "";
+        }
+    });
+
+    simulateToPhase(currentPhase);
 }

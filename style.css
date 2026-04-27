@@ -3,6 +3,22 @@ body {
     color: #d0d0be;
 }
 
+    body button {
+        background-color: white;
+    }
+
+    body button:disabled {
+        color: #404040;
+        background-color: #808080;
+    }
+
+a {
+    color: black;
+    background-color: #d0d0be;
+    text-decoration: none;
+    padding: 4px;
+}
+
 .game {
     display: flex;
     gap: 12vmin;

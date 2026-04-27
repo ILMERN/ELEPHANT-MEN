@@ -151,6 +151,14 @@ Gonna say this: I ain't going back and trying to remember what the shit I did be
 
 -------------------- COMMIT --------------------
 
+27/04/2026
+- Updated input system to enforce 1 action per phase
+- Removed button nested in a link, now it's just a link
+- Changed styling of all buttons
+- Current phase is now highlighted
+
+-------------------- COMMIT --------------------
+
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

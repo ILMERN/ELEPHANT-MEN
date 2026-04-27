@@ -307,7 +307,7 @@ function resetInputActions() {
     theirHash = null;
     theySent = 0;
     deleteAllInputActions();
-    currentPhase = 0;
+    changeToPhase(0);
 };
 
 function resetNetVariables() {
